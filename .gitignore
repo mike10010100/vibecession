@@ -24,8 +24,8 @@ dist-ssr
 *.sw?
 
 # Project custom ignores
-data/
-plots/
+/data/
+/plots/
 test.csv
 test.csv.tmp
 test.py
