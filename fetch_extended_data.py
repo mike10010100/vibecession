@@ -129,8 +129,8 @@ def save_json_for_dashboard(df):
     df_reset = df_reset.replace({np.nan: None})
     
     # Save directly to public folder so React can fetch it!
-    os.makedirs('public/data', exist_ok=True)
-    json_path = 'public/data/economic_data.json'
+    os.makedirs('public/dataset', exist_ok=True)
+    json_path = 'public/dataset/economic_data.json'
     data_list = df_reset.to_dict(orient='records')
     with open(json_path, 'w') as f:
         json.dump(data_list, f, indent=2)

@@ -89,7 +89,7 @@ export default function App() {
 
   // Fetch economic JSON
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/economic_data.json`)
+    fetch(`${import.meta.env.BASE_URL}dataset/economic_data.json`)
       .then(res => res.json())
       .then(json => {
         const cleaned = json.map(row => {
