@@ -354,6 +354,24 @@ export default function App() {
       }));
   }, [data]);
 
+  // Pre-calculated Optimal Model for Chapter 5 / Conclusion View
+  const conclusionChartData = useMemo(() => {
+    if (data.length === 0) return [];
+    return data
+      .filter(row => row.Date >= '2020-01-31')
+      .map(row => {
+        let pred = null;
+        if (row.Unemployment_Rate !== null && row.Decayed_CPI_Shock_2020 !== null && row.Personal_Savings_Rate !== null && row.Mortgage_30Y !== null) {
+          pred = 102.94 - 4.85 * row.Unemployment_Rate - 2.75 * row.Decayed_CPI_Shock_2020 + 1.42 * row.Personal_Savings_Rate - 1.71 * row.Mortgage_30Y;
+        }
+        return {
+          Date: row.Date,
+          'Actual Sentiment': row.Consumer_Sentiment,
+          'Optimal Econometric Model': pred !== null ? Math.max(0, Math.min(150, pred)) : null
+        };
+      });
+  }, [data]);
+
   // Compute stats for metrics bar
   const latestMetrics = useMemo(() => {
     if (data.length === 0) return {};
@@ -442,6 +460,13 @@ export default function App() {
         >
           4. Aligned Histories
         </button>
+        <button 
+          className={`tab-btn ${activeChapter === 'conclusion' ? 'active' : ''}`}
+          onClick={() => { setActiveChapter('conclusion'); setSandboxOpen(false); }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
+        >
+          5. Conclusion
+        </button>
       </nav>
 
       {/* Structured Split Layout */}
@@ -456,6 +481,9 @@ export default function App() {
               <>
                 <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 1: The Paradox</h3>
                 <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
+                  <div style={{ fontStyle: 'italic', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                    <strong>Abstract:</strong> The "Vibecession" (2020–2026) describes the historic disconnect where consumer sentiment plummeted to Great Recession depths despite a 50-year low in unemployment and robust GDP growth. This storyboard presents the <strong>Dual-Core Hypothesis</strong>: that bad vibes are not a psychological delusion, but a rational response to the combination of a cash-flow squeeze (permanent necessity price increases, savings depletion, record credit APRs) and a cognitive perception filter (partisan responding, labor-market security, and high discretionary spending by the wealthy).
+                  </div>
                   <p>
                     Historically, U.S. consumer sentiment was highly predictable. A model trained on thirty years of data (**1990-2019**) using just <strong>Unemployment</strong> and <strong>Annual Inflation Rate</strong> explained 60% of the public mood.
                   </p>
@@ -584,10 +612,31 @@ export default function App() {
                 </div>
               </>
             )}
+
+            {activeChapter === 'conclusion' && (
+              <>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 5: Summary Conclusion</h3>
+                <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
+                  <p>
+                    The "Vibecession" is not a psychological mass delusion or a product of media bias. It is a rational, predictable response to a structural realignment of household financial reality and cognitive perception.
+                  </p>
+                  <p>
+                    When evaluated through the **Dual-Core Hypothesis**, the economic mystery vanishes:
+                  </p>
+                  <ul style={{ paddingLeft: '1.25rem', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.9rem' }}>
+                    <li><strong>The Cash-Flow Core:</strong> Households are squeezed by a permanent 28% necessity price floor, a depleted savings buffer, and record-high borrowing costs (21%+ credit card APRs and doubled mortgage payments).</li>
+                    <li><strong>The Cognitive Core:</strong> Job security collapsed the precautionary savings motive, keeping aggregate spending high (the "Do-Say" disconnect), while political polarization and media tone amplified the negative sentiment.</li>
+                  </ul>
+                  <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', color: 'var(--text-muted)' }}>
+                    By integrating behavioral decay and borrowing costs into economic models, we restore empirical coherence. The vibes are bad because the structural cash-flow of the average American household is genuinely strained.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* COLLAPSIBLE SANDBOX CONTROLS PANEL */}
-          {activeChapter !== 'chapter-3' && activeChapter !== 'chapter-4' && (
+          {activeChapter !== 'chapter-3' && activeChapter !== 'chapter-4' && activeChapter !== 'conclusion' && (
             <div className="chart-card" style={{ padding: '1rem 1.5rem', gap: '0' }}>
               <button 
                 className="btn-toggle" 
@@ -946,6 +995,29 @@ export default function App() {
                     <Line name="1978 Stagflation" type="monotone" dataKey="1978 Stagflation Crisis" stroke="var(--danger)" strokeWidth={1.5} dot={false} />
                     <Line name="2007 Great Recession" type="monotone" dataKey="2007 Great Recession" stroke="var(--primary)" strokeWidth={1.5} dot={false} />
                     <Line name="2020 Vibecession (Current)" type="monotone" dataKey="2020 Vibecession (Current)" stroke="var(--secondary)" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {/* Chart 6: Conclusion - Optimal Model Fit */}
+          {activeChapter === 'conclusion' && (
+            <>
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>Optimal Econometric Model vs. Actual Sentiment</h4>
+                <span className="chart-subtitle">Modeling sentiment with Unemployment, Decayed CPI, Savings Rate, and Mortgage Rates (R² ~59.4%)</span>
+              </div>
+              <div className="chart-wrapper" style={{ height: '380px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={conclusionChartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#222736' : '#e2e8f0'} />
+                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
+                    <YAxis domain={[40, 110]} stroke="var(--text-muted)" fontSize={10} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
+                    <Line name="Actual Sentiment" type="monotone" dataKey="Actual Sentiment" stroke="var(--primary)" strokeWidth={3} dot={false} />
+                    <Line name="Optimal Econometric Model" type="monotone" dataKey="Optimal Econometric Model" stroke="var(--success)" strokeWidth={2.5} strokeDasharray="4 2" dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
