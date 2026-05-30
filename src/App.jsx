@@ -72,7 +72,11 @@ const VAR_DEFINITIONS = {
   Case_Shiller_Index: "The S&P CoreLogic Case-Shiller index measuring U.S. residential home prices.",
   Real_Retail_Sales: "Consumer retail spending adjusted for inflation, showing physical volume of spending.",
   Gas_Prices: "Average regular unleaded gasoline price. Highly visible and psychologically impactful.",
-  Policy_Uncertainty: "An index measuring policy uncertainty based on news coverage and tax expirations."
+  Policy_Uncertainty: "An index measuring policy uncertainty based on news coverage and tax expirations.",
+  Real_Disposable_Income: "Inflation-adjusted after-tax income, showing the actual cash flow families have available.",
+  Credit_Card_APR: "Average bank interest rate charged on credit cards. Spiked to record highs above 21.5% in 2024-2026.",
+  Auto_Loan_Rate: "Average interest rate on 48-month new car loans. Spiked to over 8.5% in tandem with auto price hikes.",
+  Auto_Insurance_CPI: "Consumer Price Index proxy for passenger auto insurance, showing premium inflation of 20%+ per year."
 };
 
 export default function App() {
@@ -88,6 +92,7 @@ export default function App() {
   // Chapter 3 Overlays
   const [showWealthEffect, setShowWealthEffect] = useState(false);
   const [showPolicyUncertainty, setShowPolicyUncertainty] = useState(false);
+  const [showDisposableIncome, setShowDisposableIncome] = useState(false);
   
   // Parameters (Tucked inside the Sandbox drawer)
   const [baseMonth, setBaseMonth] = useState('2020-01-31');
@@ -107,7 +112,11 @@ export default function App() {
     Case_Shiller_Index: false,
     Real_Retail_Sales: false,
     Gas_Prices: false,
-    Policy_Uncertainty: false
+    Policy_Uncertainty: false,
+    Real_Disposable_Income: false,
+    Credit_Card_APR: false,
+    Auto_Loan_Rate: false,
+    Auto_Insurance_CPI: false
   });
 
   const [visibleStickerLines, setVisibleStickerLines] = useState({
@@ -116,6 +125,7 @@ export default function App() {
     Food: true,
     Rent: false,
     Housing: true,
+    Insurance: false,
     LossAversion: true
   });
 
@@ -271,6 +281,7 @@ export default function App() {
     const baseRent = baseRow.CPI_Rent;
     const baseWages = baseRow.Average_Hourly_Earnings;
     const baseHpi = baseRow.Case_Shiller_Index;
+    const baseInsurance = baseRow.Auto_Insurance_CPI;
 
     return data
       .filter(row => row.Date >= baseMonth)
@@ -280,6 +291,7 @@ export default function App() {
         const rentCumul = ((row.CPI_Rent / baseRent) - 1) * 100;
         const wageCumul = ((row.Average_Hourly_Earnings / baseWages) - 1) * 100;
         const hpiCumul = baseHpi && row.Case_Shiller_Index ? (((row.Case_Shiller_Index / baseHpi) - 1) * 100) : null;
+        const insuranceCumul = baseInsurance && row.Auto_Insurance_CPI ? (((row.Auto_Insurance_CPI / baseInsurance) - 1) * 100) : null;
         const lossAversionIdx = 100 + wageCumul - (lossAversionCoef * cpiCumul);
 
         return {
@@ -290,6 +302,7 @@ export default function App() {
           Cumulative_Rent: rentCumul,
           Cumulative_Wages: wageCumul,
           Cumulative_Housing: hpiCumul,
+          Cumulative_Insurance: insuranceCumul,
           Loss_Aversion_Index: lossAversionIdx
         };
       });
@@ -327,6 +340,7 @@ export default function App() {
     const baseSales = baseRow.Real_Retail_Sales || 198790.0;
     const baseHpi = baseRow.Case_Shiller_Index || 215.0;
     const basePolicy = baseRow.Policy_Uncertainty || 120.0;
+    const baseIncome = baseRow.Real_Disposable_Income || 17000.0;
 
     return data
       .filter(row => row.Date >= '2020-01-31')
@@ -335,7 +349,8 @@ export default function App() {
         Normalized_Sentiment: row.Consumer_Sentiment ? (row.Consumer_Sentiment / baseSentiment) * 100 : null,
         Normalized_Retail_Sales: row.Real_Retail_Sales ? (row.Real_Retail_Sales / baseSales) * 100 : null,
         Normalized_Housing: row.Case_Shiller_Index ? (row.Case_Shiller_Index / baseHpi) * 100 : null,
-        Normalized_Policy_Uncertainty: row.Policy_Uncertainty ? (row.Policy_Uncertainty / basePolicy) * 100 : null
+        Normalized_Policy_Uncertainty: row.Policy_Uncertainty ? (row.Policy_Uncertainty / basePolicy) * 100 : null,
+        Normalized_Income: row.Real_Disposable_Income ? (row.Real_Disposable_Income / baseIncome) * 100 : null
       }));
   }, [data]);
 
@@ -728,7 +743,7 @@ export default function App() {
                                     onChange={(e) => setVisibleStickerLines({ ...visibleStickerLines, [k]: e.target.checked })}
                                     style={{ accentColor: 'var(--primary)' }}
                                   />
-                                  <span>{k === 'LossAversion' ? 'Loss Aversion Index' : k === 'Housing' ? 'Case-Shiller Home Prices' : k}</span>
+                                  <span>{k === 'LossAversion' ? 'Loss Aversion Index' : k === 'Housing' ? 'Case-Shiller Home Prices' : k === 'Insurance' ? 'Auto Insurance CPI' : k}</span>
                                 </label>
                               ))}
                             </div>
@@ -806,6 +821,7 @@ export default function App() {
                     {visibleStickerLines.Food && <Line name="Food Prices (%)" type="monotone" dataKey="Cumulative_Food" stroke="var(--danger)" strokeWidth={1.5} strokeDasharray="3 3" dot={false} />}
                     {visibleStickerLines.Rent && <Line name="Rent (%)" type="monotone" dataKey="Cumulative_Rent" stroke="var(--secondary)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />}
                     {visibleStickerLines.Housing && <Line name="Case-Shiller Home Prices (%)" type="monotone" dataKey="Cumulative_Housing" stroke="var(--warning)" strokeWidth={2} dot={false} />}
+                    {visibleStickerLines.Insurance && <Line name="Auto Insurance CPI (%)" type="monotone" dataKey="Cumulative_Insurance" stroke="#a855f7" strokeWidth={1.5} strokeDasharray="5 2" dot={false} />}
                     {visibleStickerLines.LossAversion && <Line name="Loss Aversion Index" type="monotone" dataKey="Loss_Aversion_Index" stroke="#eab308" strokeWidth={2.5} strokeDasharray="6 3" dot={false} />}
                     <ReferenceLine y={100} stroke="var(--text-muted)" strokeDasharray="3 3" />
                   </LineChart>
@@ -832,6 +848,8 @@ export default function App() {
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                     <Line yAxisId="percent" name="Savings Rate (%)" type="monotone" dataKey="Personal_Savings_Rate" stroke="var(--success)" strokeWidth={2} dot={false} />
                     <Line yAxisId="percent" name="30Y Mortgage (%)" type="monotone" dataKey="Mortgage_30Y" stroke="var(--warning)" strokeWidth={2} dot={false} />
+                    <Line yAxisId="percent" name="Credit Card APR (%)" type="monotone" dataKey="Credit_Card_APR" stroke="#fb923c" strokeWidth={2} dot={false} />
+                    <Line yAxisId="percent" name="Auto Loan Rate (%)" type="monotone" dataKey="Auto_Loan_Rate" stroke="#60a5fa" strokeWidth={2} dot={false} />
                     <Line yAxisId="distress" name="Card Delinquency (%)" type="monotone" dataKey="Credit_Card_Delinquency_Rate" stroke="var(--danger)" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -867,6 +885,15 @@ export default function App() {
                   />
                   <span>Show Policy Uncertainty Index</span>
                 </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', color: 'var(--text-bright)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showDisposableIncome}
+                    onChange={(e) => setShowDisposableIncome(e.target.checked)}
+                    style={{ accentColor: '#db2777' }}
+                  />
+                  <span>Show Real Disposable Income</span>
+                </label>
               </div>
 
               <div className="chart-wrapper" style={{ height: '380px' }}>
@@ -884,6 +911,9 @@ export default function App() {
                     )}
                     {showPolicyUncertainty && (
                       <Line name="Policy Uncertainty Index" type="monotone" dataKey="Normalized_Policy_Uncertainty" stroke="var(--secondary)" strokeDasharray="3 3" strokeWidth={1.5} dot={false} />
+                    )}
+                    {showDisposableIncome && (
+                      <Line name="Real Disposable Income" type="monotone" dataKey="Normalized_Income" stroke="#db2777" strokeWidth={2} dot={false} />
                     )}
                     <ReferenceLine y={100} stroke="var(--text-muted)" strokeDasharray="3 3" />
                   </LineChart>

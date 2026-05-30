@@ -25,7 +25,11 @@ EXTENDED_SERIES_MAP = {
     'LES1252881600Q': 'Real_Median_Weekly_Earnings',
     'CSUSHPISA': 'Case_Shiller_Index',
     'RRSFS': 'Real_Retail_Sales',
-    'USEPUINDXD': 'Policy_Uncertainty'
+    'USEPUINDXD': 'Policy_Uncertainty',
+    'A067RX1A020NBEA': 'Real_Disposable_Income',
+    'TERMCBCCINTNS': 'Credit_Card_APR',
+    'TERMCBAUTO48NS': 'Auto_Loan_Rate',
+    'PCU5241265241261': 'Auto_Insurance_CPI'
 }
 
 def restore_missing_csvs():
@@ -62,8 +66,11 @@ def download_all_data():
         'Upgrade-Insecure-Requests': '1'
     }
     for series_id, name in EXTENDED_SERIES_MAP.items():
-        url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
         dest_path = f"data/{series_id}.csv"
+        if os.path.exists(dest_path) and os.path.getsize(dest_path) > 100:
+            print(f"File {dest_path} already exists. Skipping download.")
+            continue
+        url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
         
         # Download with retries
         success = False
@@ -113,7 +120,7 @@ def load_and_preprocess_extended():
         # Resample to monthly (end of month)
         if series_id in ['MORTGAGE30US', 'GASREGCOVW']:
             df_monthly = df.resample('M').mean()
-        elif series_id in ['GDPC1', 'LES1252881600Q', 'TDSP']:
+        elif series_id in ['GDPC1', 'LES1252881600Q', 'TDSP', 'TERMCBCCINTNS', 'TERMCBAUTO48NS']:
             # Quarterly series -> forward fill to monthly
             df_monthly = df.resample('M').ffill()
         else:
