@@ -28,11 +28,38 @@ EXTENDED_SERIES_MAP = {
     'USEPUINDXD': 'Policy_Uncertainty'
 }
 
+def restore_missing_csvs():
+    json_path = 'public/dataset/economic_data.json'
+    if not os.path.exists(json_path):
+        print(f"Warning: {json_path} not found. Cannot restore raw CSVs.")
+        return
+    print("Restoring raw CSV data from public/dataset/economic_data.json...")
+    try:
+        df_json = pd.read_json(json_path)
+        for series_id, name in EXTENDED_SERIES_MAP.items():
+            dest_path = f"data/{series_id}.csv"
+            if not os.path.exists(dest_path):
+                if name in df_json.columns:
+                    print(f"Recreating {dest_path} from JSON...")
+                    sub_df = df_json[['Date', name]].dropna()
+                    sub_df.columns = ['observation_date', series_id]
+                    os.makedirs('data', exist_ok=True)
+                    sub_df.to_csv(dest_path, index=False)
+    except Exception as e:
+        print(f"Error restoring CSVs from JSON: {e}")
+
 def download_all_data():
     import time
     print("Downloading extended data from FRED...")
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1'
     }
     for series_id, name in EXTENDED_SERIES_MAP.items():
         url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
@@ -44,7 +71,7 @@ def download_all_data():
             try:
                 print(f"Fetching {series_id} ({name}) - Attempt {attempt + 1}...")
                 req = urllib.request.Request(url, headers=headers)
-                with urllib.request.urlopen(req, timeout=15) as response:
+                with urllib.request.urlopen(req, timeout=30) as response:
                     content = response.read()
                 with open(dest_path, 'wb') as f:
                     f.write(content)
@@ -61,6 +88,9 @@ def download_all_data():
                 print(f"Retaining existing file {dest_path}")
             else:
                 print(f"No existing file found for {series_id}")
+        else:
+            # Sleep 3 seconds after successful download to respect rate limits
+            time.sleep(3)
 
 def load_and_preprocess_extended():
     dfs = []
@@ -174,7 +204,12 @@ def save_json_for_dashboard(df):
     print(f"JSON data written to {json_path}")
 
 if __name__ == "__main__":
+    # Restore missing raw CSV files from JSON to prevent errors if FRED fails
+    restore_missing_csvs()
+    
+    # Try pulling fresh data from FRED
     download_all_data()
+    
     df = load_and_preprocess_extended()
     df = compute_derived(df)
     df.to_csv('data/economic_data_extended.csv')
