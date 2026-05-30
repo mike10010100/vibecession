@@ -692,10 +692,16 @@ export default function App() {
                               );
                             })}
                           </div>
-                          {regressionVars.Cumulative_CPI_Increase_2020 && regressionVars.Fed_Funds_Rate && (
+                          {Object.values(regressionResults.vifs).some(v => v > 10) && (
                             <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--danger-glow)', border: '1px solid rgba(244, 63, 94, 0.2)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
                               <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '0.05rem' }} />
-                              <span><strong>Warning:</strong> High <GlossaryTooltip term="Multicollinearity" definition="When two or more predictor variables are highly correlated, making estimates unstable." /> (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are unstable.</span>
+                              <span><strong>Multicollinearity Alert:</strong> Extreme VIF &gt; 10 detected. The model contains highly correlated predictors (e.g., overlapping interest rates or cumulative price levels). Coefficient signs may flip and are unstable.</span>
+                            </div>
+                          )}
+                          {regressionResults.durbinWatson !== null && regressionResults.durbinWatson < 1.2 && (
+                            <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(244, 63, 94, 0.06)', border: '1px solid rgba(244, 63, 94, 0.15)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
+                              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.05rem' }} />
+                              <span><strong>Serial Correlation Warning:</strong> Durbin-Watson &lt; 1.2. Strong autocorrelation in residuals indicates standard errors are severely underestimated, leading to spurious statistical significance.</span>
                             </div>
                           )}
                           <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--primary-glow)', border: '1px solid rgba(99, 102, 241, 0.2)', color: 'var(--text-bright)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>

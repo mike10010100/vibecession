@@ -29,7 +29,7 @@ EXTENDED_SERIES_MAP = {
     'A067RX1A020NBEA': 'Real_Disposable_Income',
     'TERMCBCCINTNS': 'Credit_Card_APR',
     'TERMCBAUTO48NS': 'Auto_Loan_Rate',
-    'PCU5241265241261': 'Auto_Insurance_CPI'
+    'CUSR0000SETA02': 'Auto_Insurance_CPI'
 }
 
 def restore_missing_csvs():
@@ -103,6 +103,16 @@ def load_and_preprocess_extended():
     dfs = []
     for series_id, name in EXTENDED_SERIES_MAP.items():
         filepath = f"data/{series_id}.csv"
+        col_to_use = series_id
+        
+        # Fallback for Auto Insurance CPI: if CUSR0000SETA02 is missing, check if PCU5241265241261 is available
+        if series_id == 'CUSR0000SETA02' and not os.path.exists(filepath):
+            fallback_path = "data/PCU5241265241261.csv"
+            if os.path.exists(fallback_path):
+                print(f"Warning: {filepath} not found. Falling back to {fallback_path}...")
+                filepath = fallback_path
+                col_to_use = 'PCU5241265241261'
+
         if not os.path.exists(filepath):
             print(f"Warning: {filepath} not found. Skipping.")
             continue
@@ -115,7 +125,7 @@ def load_and_preprocess_extended():
                 os.remove(filepath)
             continue
             
-        df[series_id] = pd.to_numeric(df[series_id].replace('.', np.nan), errors='coerce')
+        df[col_to_use] = pd.to_numeric(df[col_to_use].replace('.', np.nan), errors='coerce')
         
         # Resample to monthly (end of month)
         if series_id in ['MORTGAGE30US', 'GASREGCOVW']:

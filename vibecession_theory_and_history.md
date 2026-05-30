@@ -186,8 +186,16 @@ For high-income households, the reduction in savings was a **discretionary choic
 
 This discretionary demand from the top 40% kept job creation, GDP growth, and service inflation high, prompting the Fed to keep interest rates elevated. However, this high-interest environment directly penalized the bottom 60%, who were relying on credit and variable loans.
 
+### The Savings Rate & Precautionary Savings Collapse
+The collapse in the Personal Savings Rate (from 15% to 4%) has a dual explanation:
+1. **Low-Income Exhaustion:** For the bottom 60%, the drop was involuntary, driven by the necessity squeeze.
+2. **High-Income Security:** For the top 40%, the drop was a discretionary choice. In a labor market with a 50-year low in unemployment, the **precautionary savings motive** collapses. Because workers do not fear losing their jobs, they are willing to spend down their current income and save less, keeping aggregate retail sales resilient. This is the primary driver of the "Do-Say Gap": consumers are angry about prices (reporting negative vibes) but continue spending at record levels because their employment is secure.
+
+### The Absolute Wealth Gap vs. Relative Shares
+While total U.S. household wealth hit all-time highs, the distribution remains extremely polarized. The bottom 50% of the population holds only **~2.5%** of total U.S. wealth (up slightly from 1.8% in 2020 due to entry-level wage gains). Although this share rose in relative terms, its absolute size is so small that the bottom half of U.S. households possesses virtually no asset cushion to offset the permanent price level shock, making them extremely dependent on high-interest revolving credit.
+
 ### Summary
-The vibecession is a structural product of this bifurcation. The hedonic spending of the wealthy kept the macro-economy looking "strong" on paper, but it did so by perpetuating the high prices and high interest rates that squeezed the daily cash-flow of the bottom 60%. Because sentiment indexes reflect the average of the whole population, the severe distress of the majority dragged overall sentiment to historic lows.
+The vibecession is a structural product of this bifurcation. The discretionary spending of the wealthy top 40% kept the macro-economy looking "strong" on paper, but it did so by perpetuating the high prices and high interest rates that squeezed the daily cash-flow of the bottom 60%. Because sentiment indexes reflect the average of the whole U.S. population, the severe distress of the majority dragged aggregate sentiment to historic lows.
 
 ### 3. Physical Indicators of Distress: Food Insecurity & Food Bank Demand
 The "vibe gap" is not just a mental state; it has physical, measurable manifestations. The most acute indicator of household cash-flow exhaustion is the dramatic rise in food insecurity and charitable food bank demand between 2020 and 2026:
