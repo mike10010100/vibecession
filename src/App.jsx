@@ -68,7 +68,9 @@ export default function App() {
   const [regressionVars, setRegressionVars] = useState({
     Unemployment_Rate: true,
     CPI_YoY: true,
+    Decayed_CPI_Shock_2020: false,
     Cumulative_CPI_Increase_2020: false,
+    Personal_Savings_Rate: false,
     Mortgage_30Y: false,
     Fed_Funds_Rate: false,
     Real_Wage_Index_YoY: false,
@@ -557,6 +559,10 @@ export default function App() {
                               <span><strong>Warning:</strong> High Multicollinearity (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are inflated, making coefficients unstable.</span>
                             </div>
                           )}
+                          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--primary-glow)', border: '1px solid rgba(99, 102, 241, 0.2)', color: 'var(--text-bright)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
+                            <Info size={16} style={{ flexShrink: 0, marginTop: '0.05rem', color: 'var(--primary)' }} />
+                            <span><strong>💡 Econ Tip:</strong> Select <em>Unemployment Rate</em>, <em>Decayed CPI Shock 2020</em>, <em>Personal Savings Rate</em>, and <em>Mortgage 30Y</em> for the optimal model (R² ~59.4%) with signs matching economic theory!</span>
+                          </div>
                         </div>
                       )}
                     </>

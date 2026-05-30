@@ -29,17 +29,38 @@ EXTENDED_SERIES_MAP = {
 }
 
 def download_all_data():
+    import time
     print("Downloading extended data from FRED...")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
     for series_id, name in EXTENDED_SERIES_MAP.items():
         url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
         dest_path = f"data/{series_id}.csv"
-        try:
-            print(f"Fetching {series_id} ({name})...")
-            urllib.request.urlretrieve(url, dest_path)
-        except Exception as e:
-            print(f"Error downloading {series_id}: {e}")
+        
+        # Download with retries
+        success = False
+        for attempt in range(3):
+            try:
+                print(f"Fetching {series_id} ({name}) - Attempt {attempt + 1}...")
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    content = response.read()
+                with open(dest_path, 'wb') as f:
+                    f.write(content)
+                success = True
+                break
+            except Exception as e:
+                print(f"Error on attempt {attempt + 1} for {series_id}: {e}")
+                if attempt < 2:
+                    time.sleep(2)
+        
+        if not success:
+            print(f"Failed to download {series_id} after 3 attempts.")
             if os.path.exists(dest_path):
-                os.remove(dest_path)
+                print(f"Retaining existing file {dest_path}")
+            else:
+                print(f"No existing file found for {series_id}")
 
 def load_and_preprocess_extended():
     dfs = []
@@ -97,6 +118,22 @@ def compute_derived(df):
     
     # Misery Index
     df['Misery_Index'] = df['Unemployment_Rate'] + df['CPI_YoY']
+
+    # Decayed CPI Shock (Jan 2020 baseline - 50% annual decay rate per Cummings & Mahoney)
+    df['Monthly_Inflation'] = df['CPI_All_Items'].pct_change()
+    decay_factor = 0.5 ** (1/12)
+    decayed_shocks = []
+    current_shock = 0.0
+    for idx, row in df.iterrows():
+        if idx < pd.Timestamp('2020-01-01'):
+            decayed_shocks.append(0.0)
+        else:
+            inf = row['Monthly_Inflation']
+            if pd.isna(inf):
+                inf = 0.0
+            current_shock = inf + decay_factor * current_shock
+            decayed_shocks.append(current_shock * 100)
+    df['Decayed_CPI_Shock_2020'] = decayed_shocks
     
     # Cumulative price increases since Jan 2019 and Jan 2020
     for year in [2019, 2020]:
