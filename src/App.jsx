@@ -58,6 +58,11 @@ export default function App() {
   // Navigation: Story Chapters
   const [activeChapter, setActiveChapter] = useState('chapter-1');
   const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [cashFlowSubTab, setCashFlowSubTab] = useState('prices'); // 'prices' | 'capital'
+  
+  // Chapter 3 Overlays
+  const [showWealthEffect, setShowWealthEffect] = useState(false);
+  const [showPolicyUncertainty, setShowPolicyUncertainty] = useState(false);
   
   // Parameters (Tucked inside the Sandbox drawer)
   const [baseMonth, setBaseMonth] = useState('2020-01-31');
@@ -128,7 +133,7 @@ export default function App() {
 
   // OLS Regression Solver
   const regressionResults = useMemo(() => {
-    if (data.length === 0) return { coefficients: null, predictedData: [] };
+    if (data.length === 0) return { coefficients: null, predictedData: [], durbinWatson: null, vifs: {} };
     const trainSet = data.filter(row => {
       const isTrain = row.Date >= trainStart && row.Date <= trainEnd;
       if (!isTrain || row.Consumer_Sentiment === null) return false;
@@ -139,7 +144,7 @@ export default function App() {
       return !hasNull;
     });
 
-    if (trainSet.length < 10) return { coefficients: null, error: "Select a wider training range.", predictedData: [] };
+    if (trainSet.length < 10) return { coefficients: null, error: "Select a wider training range.", predictedData: [], durbinWatson: null, vifs: {} };
 
     const y = trainSet.map(row => row.Consumer_Sentiment);
     const selectedKeys = Object.keys(regressionVars).filter(k => regressionVars[k]);
@@ -150,7 +155,7 @@ export default function App() {
     });
 
     const beta = solveOLS(y, X);
-    if (!beta) return { coefficients: null, error: "Singular matrix. Try modifying inputs.", predictedData: [] };
+    if (!beta) return { coefficients: null, error: "Singular matrix. Try modifying inputs.", predictedData: [], durbinWatson: null, vifs: {} };
 
     const coefficients = { Intercept: beta[0] };
     selectedKeys.forEach((k, idx) => { coefficients[k] = beta[idx + 1]; });
@@ -172,14 +177,62 @@ export default function App() {
     const yMean = y.reduce((a, b) => a + b, 0) / y.length;
     const ssTot = y.reduce((acc, val) => acc + Math.pow(val - yMean, 2), 0);
     let ssRes = 0;
+    let residuals = [];
     trainSet.forEach((row, idx) => {
       let pred = beta[0];
       selectedKeys.forEach((k, vIdx) => { pred += beta[vIdx + 1] * row[k]; });
-      ssRes += Math.pow(y[idx] - pred, 2);
+      const resid = y[idx] - pred;
+      residuals.push(resid);
+      ssRes += Math.pow(resid, 2);
     });
 
-    coefficients['R_Squared'] = 1 - (ssRes / ssTot);
-    return { coefficients, predictedData };
+    coefficients['R_Squared'] = ssTot > 0 ? 1 - (ssRes / ssTot) : 0;
+
+    // Durbin-Watson statistic
+    let numDW = 0;
+    let denDW = 0;
+    residuals.forEach((resid, idx) => {
+      denDW += resid * resid;
+      if (idx > 0) {
+        const diff = resid - residuals[idx - 1];
+        numDW += diff * diff;
+      }
+    });
+    const durbinWatson = denDW > 0 ? numDW / denDW : 0;
+
+    // Variance Inflation Factors (VIFs)
+    const vifs = {};
+    if (selectedKeys.length <= 1) {
+      selectedKeys.forEach(k => { vifs[k] = 1.0; });
+    } else {
+      selectedKeys.forEach(targetKey => {
+        const yAux = trainSet.map(row => row[targetKey]);
+        const otherKeys = selectedKeys.filter(k => k !== targetKey);
+        const XAux = trainSet.map(row => {
+          const rowX = [1];
+          otherKeys.forEach(k => rowX.push(row[k]));
+          return rowX;
+        });
+        const betaAux = solveOLS(yAux, XAux);
+        if (!betaAux) {
+          vifs[targetKey] = 99.9;
+        } else {
+          const yAuxMean = yAux.reduce((a, b) => a + b, 0) / yAux.length;
+          const ssTotAux = yAux.reduce((acc, val) => acc + Math.pow(val - yAuxMean, 2), 0);
+          let ssResAux = 0;
+          trainSet.forEach((row, idx) => {
+            let pred = betaAux[0];
+            otherKeys.forEach((k, vIdx) => { pred += betaAux[vIdx + 1] * row[k]; });
+            ssResAux += Math.pow(yAux[idx] - pred, 2);
+          });
+          const r2Aux = ssTotAux > 0 ? 1 - (ssResAux / ssTotAux) : 0;
+          const vif = r2Aux >= 1.0 ? 99.9 : 1 / (1 - r2Aux);
+          vifs[targetKey] = Math.max(1.0, Math.min(99.9, vif));
+        }
+      });
+    }
+
+    return { coefficients, predictedData, durbinWatson, vifs };
   }, [data, trainStart, trainEnd, regressionVars]);
 
   // Derived Cumulative Metrics
@@ -247,6 +300,8 @@ export default function App() {
     if (!baseRow) return [];
     const baseSentiment = baseRow.Consumer_Sentiment || 99.8;
     const baseSales = baseRow.Real_Retail_Sales || 198790.0;
+    const baseHpi = baseRow.Case_Shiller_Index || 215.0;
+    const basePolicy = baseRow.Policy_Uncertainty || 120.0;
 
     return data
       .filter(row => row.Date >= '2020-01-31')
@@ -254,7 +309,8 @@ export default function App() {
         Date: row.Date,
         Normalized_Sentiment: row.Consumer_Sentiment ? (row.Consumer_Sentiment / baseSentiment) * 100 : null,
         Normalized_Retail_Sales: row.Real_Retail_Sales ? (row.Real_Retail_Sales / baseSales) * 100 : null,
-        Policy_Uncertainty: row.Policy_Uncertainty
+        Normalized_Housing: row.Case_Shiller_Index ? (row.Case_Shiller_Index / baseHpi) * 100 : null,
+        Normalized_Policy_Uncertainty: row.Policy_Uncertainty ? (row.Policy_Uncertainty / basePolicy) * 100 : null
       }));
   }, [data]);
 
@@ -323,35 +379,28 @@ export default function App() {
           onClick={() => { setActiveChapter('chapter-1'); setSandboxOpen(false); }}
           style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
-          1. The Vibe Gap
+          1. The Paradox
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-2' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-2'); setSandboxOpen(false); }}
           style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
-          2. Sticker Shock
+          2. Cash-Flow Squeeze
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-3' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-3'); setSandboxOpen(false); }}
           style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
-          3. Credit & Capital
+          3. Do-Say Disconnect
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-4' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-4'); setSandboxOpen(false); }}
           style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
-          4. Historical Overlay
-        </button>
-        <button 
-          className={`tab-btn ${activeChapter === 'chapter-5' ? 'active' : ''}`}
-          onClick={() => { setActiveChapter('chapter-5'); setSandboxOpen(false); }}
-          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
-        >
-          5. Peer Critique
+          4. Aligned Histories
         </button>
       </nav>
 
@@ -365,13 +414,13 @@ export default function App() {
           <div className="theory-card" style={{ height: 'auto', borderLeft: '4px solid var(--primary)', paddingLeft: '1.5rem' }}>
             {activeChapter === 'chapter-1' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 1: The Disconnect</h3>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 1: The Paradox</h3>
                 <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
                   <p>
                     Historically, U.S. consumer sentiment was highly predictable. A model trained on thirty years of data (**1990-2019**) using just <strong>Unemployment</strong> and <strong>Annual Inflation Rate</strong> explained 60% of the public mood.
                   </p>
                   <p>
-                    Post-pandemic, this historical model broke down entirely. Based on a 3.6% unemployment rate and inflation returning to target, sentiment should have hovered near **90.0**. Instead, it crashed to **50.0** in June 2022.
+                    Post-pandemic, this traditional model broke down entirely. Based on a 3.6% unemployment rate and inflation returning to target, sentiment should have hovered near **90.0**. Instead, it crashed to **50.0** in June 2022, creating a massive "vibe gap."
                   </p>
                   <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2rem' }}>
                     <div>
@@ -389,24 +438,40 @@ export default function App() {
 
             {activeChapter === 'chapter-2' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 2: Sticker Shock & Loss Aversion</h3>
-                <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 2: The Cash-Flow Squeeze</h3>
+                <div className="theory-content" style={{ gap: '0.8rem', marginTop: '0.5rem' }}>
                   <p>
-                    Why did sentiment stay depressed if wages outpaced inflation? The answer lies in <strong>sticker shock</strong> and <strong>loss aversion</strong>.
+                    The vibecession is anchored in a three-pillar cash-flow squeeze on the bottom 60% of households:
                   </p>
-                  <p>
-                    Wages rose 34.8% since 2020, but inelastic necessities rose faster: food is up **33.5%**, rent is up **31.8%**, and home prices rose **45.0%**. According to behavioral economics, we feel losses twice as intensely as gains. When price shocks are weighted at 2.0x, the **Loss Aversion Index** drops below 100, leaving consumers feeling poorer.
-                  </p>
-                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2rem' }}>
+                  <ul style={{ paddingLeft: '1.25rem', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.9rem' }}>
+                    <li><strong>Sticker Shock & Loss Aversion:</strong> Necessities like food (+33.5%) and rent (+31.8%) outpaced wages, and loss aversion makes price shocks feel twice as painful as equivalent wage gains.</li>
+                    <li><strong>Savings Depletion & Debt:</strong> Consumers depleted their savings buffers (savings rate fell from 25% to under 4%) and took on high-interest credit card debt.</li>
+                    <li><strong>Housing Lockout:</strong> Doubled mortgage payments froze housing inventory and locked out prospective buyers.</li>
+                  </ul>
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem', margin: '0.75rem 0' }}>
+                    <button 
+                      onClick={() => setCashFlowSubTab('prices')}
+                      style={{ fontSize: '0.75rem', padding: '0.4rem 0.9rem', borderRadius: '50px', background: cashFlowSubTab === 'prices' ? 'var(--primary)' : 'var(--bg-app)', color: 'var(--text-bright)', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s' }}
+                    >
+                      Necessity Prices
+                    </button>
+                    <button 
+                      onClick={() => setCashFlowSubTab('capital')}
+                      style={{ fontSize: '0.75rem', padding: '0.4rem 0.9rem', borderRadius: '50px', background: cashFlowSubTab === 'capital' ? 'var(--primary)' : 'var(--bg-app)', color: 'var(--text-bright)', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s' }}
+                    >
+                      Savings & Borrowing Costs
+                    </button>
+                  </div>
+
+                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', display: 'flex', gap: '2rem' }}>
                     <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Loss Aversion Index</span>
-                      <strong style={{ fontSize: '1.75rem', color: latestMetrics.Loss_Aversion_Index < 100 ? 'var(--danger)' : 'var(--success)' }}>
-                        {latestMetrics.Loss_Aversion_Index?.toFixed(1)}
-                      </strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Savings Rate</span>
+                      <strong style={{ fontSize: '1.5rem', color: 'var(--danger)' }}>{latestMetrics.Savings_Rate?.toFixed(1)}%</strong>
                     </div>
                     <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Cumulative Cost Hike</span>
-                      <strong style={{ fontSize: '1.75rem', color: 'var(--primary)' }}>+{latestMetrics.Cumulative_CPI?.toFixed(1)}%</strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>30Y Mortgage</span>
+                      <strong style={{ fontSize: '1.5rem', color: 'var(--warning)' }}>{latestMetrics.Mortgage_30Y?.toFixed(1)}%</strong>
                     </div>
                   </div>
                 </div>
@@ -415,75 +480,66 @@ export default function App() {
 
             {activeChapter === 'chapter-3' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 3: The Credit & Housing Lock-out</h3>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 3: The "Do-Say" Disconnect</h3>
                 <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
                   <p>
-                    The secondary shock was a cash-flow drain. In 2021-2022, households depleted their liquid cash reserves to maintain spending, pushing the savings rate from 25% down to **under 4%**.
+                    Why did aggregate consumer spending (PCE) remain robust while sentiment crashed? This is the **Do-Say Disconnect**, driven by two parallel forces:
                   </p>
-                  <p>
-                    To cover the gap, consumers took on record credit card debt. Because the Fed hiked rates to over 5%, borrowing costs exploded. Mortgage rates rising to 7.6% doubled the monthly payment of purchasing a home, locking out prospective buyers and freezing housing supply.
+                  <ul style={{ paddingLeft: '1.25rem', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.9rem' }}>
+                    <li><strong>Precautionary Savings Collapse:</strong> In a 50-year low unemployment market (3.6%), consumers felt high job security. This collapsed their precautionary savings motive, prompting them to continue spending despite cost-of-living anxiety.</li>
+                    <li><strong>Partisan Expressive Responding:</strong> Sentiment indexes are increasingly contaminated by political polarization. Consumers use surveys to "boo" the sitting administration rather than report actual financial distress.</li>
+                  </ul>
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+                    As shown on the chart, aggregate sentiment fell to historical lows while real retail sales expanded by **~15%** since 2020.
                   </p>
-                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2rem' }}>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Savings Rate</span>
-                      <strong style={{ fontSize: '1.75rem', color: 'var(--danger)' }}>{latestMetrics.Savings_Rate?.toFixed(1)}%</strong>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>30Y Mortgage Rate</span>
-                      <strong style={{ fontSize: '1.75rem', color: 'var(--warning)' }}>{latestMetrics.Mortgage_30Y?.toFixed(2)}%</strong>
-                    </div>
-                  </div>
                 </div>
               </>
             )}
 
             {activeChapter === 'chapter-4' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 4: The Aligned Crisis Overlay</h3>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 4: Aligned Histories & OECD Controls</h3>
                 <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
                   <p>
-                    Aligning sentiment peaks (Month 0) for the major economic shocks of the last 50 years reveals the unique persistence of the post-pandemic cycle.
+                    Aligning economic cycles since 1978 reveals that the current cycle is uniquely persistent. In past recessions, prices collapsed, providing cost relief. In the 2020 cycle, prices stabilized at elevated baselines without falling, leaving the squeeze active.
                   </p>
                   <p>
-                    In 1978 and 2007, consumer sentiment began recovering 18-24 months after the initial shock. The **2020 Vibecession**, however, remains pinned near all-time lows. Because prices stabilized at elevated baselines without falling (no deflation), the cost-of-living squeeze was never relieved.
+                    <strong>The European Paradox:</strong> European households faced severe energy price shocks and contracting real wages, causing their sentiment and actual spending to collapse in lockstep. The U.S. had robust growth and positive real wages, yet sentiment collapsed to identical depths—highlighting a U.S.-specific psychological and political anomaly.
                   </p>
-                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2rem' }}>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Current Sentiment</span>
-                      <strong style={{ fontSize: '1.75rem', color: 'var(--primary)' }}>{latestMetrics.Sentiment?.toFixed(1)}</strong>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Min Sentiment (June 2022)</span>
-                      <strong style={{ fontSize: '1.75rem', color: 'var(--danger)' }}>50.0</strong>
-                    </div>
+                  
+                  {/* Styled G7/OECD Comparison Table */}
+                  <div style={{ marginTop: '0.5rem', overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-app)', borderBottom: '1px solid var(--border-color)' }}>
+                          <th style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Region</th>
+                          <th style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Inflation Shock</th>
+                          <th style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Real GDP Growth</th>
+                          <th style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Real Wages</th>
+                          <th style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Sentiment vs Spending</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'rgba(99, 102, 241, 0.03)' }}>
+                          <td style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>United States</td>
+                          <td style={{ padding: '0.5rem' }}>High (Peak 9.1% CPI)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--success)', fontWeight: 600 }}>Robust (+2.5% to +3.0%)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--success)', fontWeight: 600 }}>Positive (+6.5% cumulative)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--danger)', fontWeight: 600 }}>Decoupled (Vibecession)</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: '0.5rem', fontWeight: 700, color: 'var(--text-bright)' }}>Eurozone / UK</td>
+                          <td style={{ padding: '0.5rem' }}>Severe (Peak 10.6%)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--danger)', fontWeight: 600 }}>Stagnant (Near 0%)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--danger)', fontWeight: 600 }}>Negative (Energy squeeze)</td>
+                          <td style={{ padding: '0.5rem', color: 'var(--success)', fontWeight: 600 }}>Coupled (Traditional recession)</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                </div>
-              </>
-            )}
 
-            {activeChapter === 'chapter-5' && (
-              <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 5: Peer-Review Critique</h3>
-                <div className="theory-content" style={{ gap: '0.8rem', marginTop: '0.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                  <p>
-                    A rigorous review of the Unified Theory by our <strong>Macroeconomic Peer-Reviewer</strong> reveals several counter-arguments, behavioral caveats, and econometric corrections:
-                  </p>
-                  <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.5rem 0', listStyleType: 'disc' }}>
-                    <li>
-                      <strong>The Partisan Noise (~30%):</strong> Traditional sentiment indexes are heavily contaminated by "expressive responding". Research shows Republicans and Democrats use surveys to signal political disapproval. Using the sentiment of <em>Independent voters</em> removes this bias.
-                    </li>
-                    <li>
-                      <strong>The "Do-Say" Disconnect:</strong> While consumers tell survey-takers that sentiment is at recessionary lows, actual spending (PCE) remains at record highs. A 50-year low in unemployment (3.6%) has collapsed the <em>precautionary savings motive</em>, allowing consumers to comfortably spend down savings and take on credit card debt.
-                    </li>
-                    <li>
-                      <strong>The OECD/International Anomaly:</strong> European confidence fell due to real energy shocks and falling real wages, matching actual retail contraction. The U.S., however, has had G7-leading growth and positive real wages, yet sentiment fell to the same stagflationary depths, showing a U.S.-specific psychological anomaly.
-                    </li>
-                    <li>
-                      <strong>Econometric Violations:</strong> The standard OLS model violates linear assumptions due to <em>multicollinearity</em> (VIF &gt; 10) and <em>serial correlation</em> (Durbin-Watson = 0.651). Correcting with <strong>Newey-West standard errors</strong> renders the Federal Funds Rate statistically insignificant.
-                    </li>
-                  </ul>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
-                    For a full breakdown of the critique, see the report: <a href="https://github.com/mike10010100/vibecession/blob/main/vibecession_critique.md" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>vibecession_critique.md</a>.
+                    For a full econometric and behavioral review, see the critique report: <a href="https://github.com/mike10010100/vibecession/blob/main/vibecession_critique.md" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>vibecession_critique.md</a>.
                   </p>
                 </div>
               </>
@@ -491,7 +547,7 @@ export default function App() {
           </div>
 
           {/* COLLAPSIBLE SANDBOX CONTROLS PANEL */}
-          {activeChapter !== 'chapter-4' && activeChapter !== 'chapter-5' && (
+          {activeChapter !== 'chapter-3' && activeChapter !== 'chapter-4' && (
             <div className="chart-card" style={{ padding: '1rem 1.5rem', gap: '0' }}>
               <button 
                 className="btn-toggle" 
@@ -541,22 +597,53 @@ export default function App() {
                           </select>
                         </div>
                       </div>
-
                       {regressionResults.coefficients && (
                         <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-app)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Model Coefficients (OLS):</div>
+                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Model Diagnostics (OLS):</div>
+                          <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>R-Squared (R²):</span>
+                              <strong style={{ color: 'var(--text-bright)' }}>{(regressionResults.coefficients.R_Squared * 100).toFixed(1)}%</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>Durbin-Watson (DW):</span>
+                              <strong style={{ color: regressionResults.durbinWatson < 1.0 ? 'var(--danger)' : regressionResults.durbinWatson < 1.5 ? 'var(--warning)' : 'var(--success)' }}>
+                                {regressionResults.durbinWatson?.toFixed(3)}
+                              </strong>
+                            </div>
+                          </div>
+                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Coefficients & VIFs:</div>
                           <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', color: 'var(--text-main)' }}>
-                            <div>R²: {(regressionResults.coefficients.R_Squared * 100).toFixed(1)}%</div>
-                            <div>Intercept: {regressionResults.coefficients.Intercept.toFixed(2)}</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.1rem', marginBottom: '0.1rem', color: 'var(--text-muted)' }}>
+                              <span>Variable</span>
+                              <span>Coeff (VIF)</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>Intercept</span>
+                              <span>{regressionResults.coefficients.Intercept.toFixed(2)}</span>
+                            </div>
                             {Object.keys(regressionResults.coefficients).map(k => {
                               if (k === 'Intercept' || k === 'R_Squared') return null;
-                              return <div key={k}>{k.replace(/_/g, ' ')}: {regressionResults.coefficients[k] >= 0 ? '+' : ''}{regressionResults.coefficients[k].toFixed(4)}</div>;
+                              const coeff = regressionResults.coefficients[k];
+                              const vif = regressionResults.vifs[k];
+                              const isVifHigh = vif > 10;
+                              return (
+                                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', color: isVifHigh ? 'var(--danger)' : 'inherit' }}>
+                                  <span>{k.replace(/_/g, ' ')}</span>
+                                  <span>
+                                    {coeff >= 0 ? '+' : ''}{coeff.toFixed(4)} 
+                                    <span style={{ color: isVifHigh ? 'var(--danger)' : 'var(--text-muted)', marginLeft: '0.4rem' }}>
+                                      ({vif !== undefined ? vif.toFixed(1) : '1.0'})
+                                    </span>
+                                  </span>
+                                </div>
+                              );
                             })}
                           </div>
                           {regressionVars.Cumulative_CPI_Increase_2020 && regressionVars.Fed_Funds_Rate && (
                             <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--danger-glow)', border: '1px solid rgba(244, 63, 94, 0.2)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
                               <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '0.05rem' }} />
-                              <span><strong>Warning:</strong> High Multicollinearity (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are inflated, making coefficients unstable.</span>
+                              <span><strong>Warning:</strong> High Multicollinearity (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are unstable.</span>
                             </div>
                           )}
                           <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--primary-glow)', border: '1px solid rgba(99, 102, 241, 0.2)', color: 'var(--text-bright)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
@@ -571,53 +658,54 @@ export default function App() {
                   {/* Chapter 2 controls */}
                   {activeChapter === 'chapter-2' && (
                     <>
-                      <div className="selector-group">
-                        <label>Base Month</label>
-                        <select className="custom-select" value={baseMonth} onChange={(e) => setBaseMonth(e.target.value)}>
-                          {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                      </div>
-                      <div className="selector-group">
-                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>Loss Aversion Multiplier: <strong>{lossAversionCoef.toFixed(1)}x</strong></span>
-                        </label>
-                        <input 
-                          type="range" 
-                          min="1.0" 
-                          max="3.0" 
-                          step="0.1" 
-                          value={lossAversionCoef} 
-                          onChange={(e) => setLossAversionCoef(parseFloat(e.target.value))}
-                          style={{ accentColor: 'var(--primary)', height: '6px', borderRadius: '3px', outline: 'none', margin: '0.5rem 0' }}
-                        />
-                      </div>
-                      <div className="selector-group">
-                        <label>Visible Series</label>
-                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
-                          {Object.keys(visibleStickerLines).map(k => (
-                            <label key={k} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', color: 'var(--text-bright)' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={visibleStickerLines[k]} 
-                                onChange={(e) => setVisibleStickerLines({ ...visibleStickerLines, [k]: e.target.checked })}
-                                style={{ accentColor: 'var(--primary)' }}
-                              />
-                              <span>{k === 'LossAversion' ? 'Loss Aversion Index' : k === 'Housing' ? 'Case-Shiller Home Prices' : k}</span>
+                      {cashFlowSubTab === 'prices' ? (
+                        <>
+                          <div className="selector-group">
+                            <label>Base Month</label>
+                            <select className="custom-select" value={baseMonth} onChange={(e) => setBaseMonth(e.target.value)}>
+                              {availableMonths.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                          </div>
+                          <div className="selector-group">
+                            <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>Loss Aversion Multiplier: <strong>{lossAversionCoef.toFixed(1)}x</strong></span>
                             </label>
-                          ))}
+                            <input 
+                              type="range" 
+                              min="1.0" 
+                              max="3.0" 
+                              step="0.1" 
+                              value={lossAversionCoef} 
+                              onChange={(e) => setLossAversionCoef(parseFloat(e.target.value))}
+                              style={{ accentColor: 'var(--primary)', height: '6px', borderRadius: '3px', outline: 'none', margin: '0.5rem 0' }}
+                            />
+                          </div>
+                          <div className="selector-group">
+                            <label>Visible Series</label>
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                              {Object.keys(visibleStickerLines).map(k => (
+                                <label key={k} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', color: 'var(--text-bright)' }}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={visibleStickerLines[k]} 
+                                    onChange={(e) => setVisibleStickerLines({ ...visibleStickerLines, [k]: e.target.checked })}
+                                    style={{ accentColor: 'var(--primary)' }}
+                                  />
+                                  <span>{k === 'LossAversion' ? 'Loss Aversion Index' : k === 'Housing' ? 'Case-Shiller Home Prices' : k}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '0.5rem', color: 'var(--text-muted)' }}>
+                          <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                          <p>
+                            This view plots monthly percentages. Use this data to observe the cash-flow transition from savings depletion to high debt delinquency rates as borrowing costs doubled.
+                          </p>
                         </div>
-                      </div>
+                      )}
                     </>
-                  )}
-
-                  {/* Chapter 3 Info */}
-                  {activeChapter === 'chapter-3' && (
-                    <div style={{ display: 'flex', gap: '0.5rem', color: 'var(--text-muted)' }}>
-                      <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-                      <p>
-                        This view plots monthly percentages. Use this data to observe the cash-flow transition from savings depletion to debt buildup as credit card delinquencies peaked.
-                      </p>
-                    </div>
                   )}
 
                 </div>
@@ -661,8 +749,8 @@ export default function App() {
             </>
           )}
 
-          {/* Chart 2: Sticker Shock */}
-          {activeChapter === 'chapter-2' && (
+          {/* Chart 2: Cash-Flow Squeeze (Prices & Loss Aversion) */}
+          {activeChapter === 'chapter-2' && cashFlowSubTab === 'prices' && (
             <>
               <div style={{ marginBottom: '1rem' }}>
                 <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>Cumulative Price Shock vs. Wages</h4>
@@ -689,8 +777,8 @@ export default function App() {
             </>
           )}
 
-          {/* Chart 3: Credit Squeeze */}
-          {activeChapter === 'chapter-3' && (
+          {/* Chart 3: Cash-Flow Squeeze (Savings & Borrowing Costs) */}
+          {activeChapter === 'chapter-2' && cashFlowSubTab === 'capital' && (
             <>
               <div style={{ marginBottom: '1rem' }}>
                 <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>Household Cash Flow Indicators</h4>
@@ -714,7 +802,60 @@ export default function App() {
             </>
           )}
 
-          {/* Chart 4: Historical Overlay */}
+          {/* Chart 4: Do-Say Disconnect */}
+          {activeChapter === 'chapter-3' && (
+            <>
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>The "Do-Say" Disconnect (Index: Jan 2020 = 100)</h4>
+                <span className="chart-subtitle">Sentiment collapsed by half, while inflation-adjusted retail sales expanded by ~15%</span>
+              </div>
+              
+              {/* Interactive Overlays */}
+              <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', margin: '0.5rem 0 1rem 0', fontSize: '0.85rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', color: 'var(--text-bright)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showWealthEffect}
+                    onChange={(e) => setShowWealthEffect(e.target.checked)}
+                    style={{ accentColor: 'var(--warning)' }}
+                  />
+                  <span>Show Home Prices (Wealth Effect)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', color: 'var(--text-bright)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showPolicyUncertainty}
+                    onChange={(e) => setShowPolicyUncertainty(e.target.checked)}
+                    style={{ accentColor: 'var(--secondary)' }}
+                  />
+                  <span>Show Policy Uncertainty Index</span>
+                </label>
+              </div>
+
+              <div className="chart-wrapper" style={{ height: '380px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={disconnectData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#222736' : '#e2e8f0'} />
+                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
+                    <YAxis stroke="var(--text-muted)" fontSize={10} domain={[40, 160]} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
+                    <Line name="Sentiment Index" type="monotone" dataKey="Normalized_Sentiment" stroke="var(--primary)" strokeWidth={3} dot={false} />
+                    <Line name="Real Retail Sales Index" type="monotone" dataKey="Normalized_Retail_Sales" stroke="var(--success)" strokeWidth={3} dot={false} />
+                    {showWealthEffect && (
+                      <Line name="Home Prices (Wealth Effect)" type="monotone" dataKey="Normalized_Housing" stroke="var(--warning)" strokeWidth={2} dot={false} />
+                    )}
+                    {showPolicyUncertainty && (
+                      <Line name="Policy Uncertainty Index" type="monotone" dataKey="Normalized_Policy_Uncertainty" stroke="var(--secondary)" strokeDasharray="3 3" strokeWidth={1.5} dot={false} />
+                    )}
+                    <ReferenceLine y={100} stroke="var(--text-muted)" strokeDasharray="3 3" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {/* Chart 5: Aligned Histories */}
           {activeChapter === 'chapter-4' && (
             <>
               <div style={{ marginBottom: '1rem' }}>
@@ -732,30 +873,6 @@ export default function App() {
                     <Line name="1978 Stagflation" type="monotone" dataKey="1978 Stagflation Crisis" stroke="var(--danger)" strokeWidth={1.5} dot={false} />
                     <Line name="2007 Great Recession" type="monotone" dataKey="2007 Great Recession" stroke="var(--primary)" strokeWidth={1.5} dot={false} />
                     <Line name="2020 Vibecession (Current)" type="monotone" dataKey="2020 Vibecession (Current)" stroke="var(--secondary)" strokeWidth={3} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </>
-          )}
-
-          {/* Chart 5: Peer Critique (The Do-Say Disconnect) */}
-          {activeChapter === 'chapter-5' && (
-            <>
-              <div style={{ marginBottom: '1rem' }}>
-                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>The "Do-Say" Disconnect (Index: Jan 2020 = 100)</h4>
-                <span className="chart-subtitle">Sentiment collapsed by half, while inflation-adjusted retail sales expanded by ~15%</span>
-              </div>
-              <div className="chart-wrapper" style={{ height: '380px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={disconnectData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#222736' : '#e2e8f0'} />
-                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis stroke="var(--text-muted)" fontSize={10} domain={[40, 130]} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
-                    <Line name="Sentiment Index" type="monotone" dataKey="Normalized_Sentiment" stroke="var(--primary)" strokeWidth={3} dot={false} />
-                    <Line name="Real Retail Sales Index" type="monotone" dataKey="Normalized_Retail_Sales" stroke="var(--success)" strokeWidth={3} dot={false} />
-                    <ReferenceLine y={100} stroke="var(--text-muted)" strokeDasharray="3 3" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
