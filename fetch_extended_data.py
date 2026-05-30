@@ -166,20 +166,17 @@ def compute_derived(df):
     # Misery Index
     df['Misery_Index'] = df['Unemployment_Rate'] + df['CPI_YoY']
 
-    # Decayed CPI Shock (Jan 2020 baseline - 50% annual decay rate per Cummings & Mahoney)
+    # Decayed CPI Shock (Continuous behavioral decay - 50% annual decay rate per Cummings & Mahoney)
     df['Monthly_Inflation'] = df['CPI_All_Items'].pct_change()
     decay_factor = 0.5 ** (1/12)
     decayed_shocks = []
     current_shock = 0.0
     for idx, row in df.iterrows():
-        if idx < pd.Timestamp('2020-01-01'):
-            decayed_shocks.append(0.0)
-        else:
-            inf = row['Monthly_Inflation']
-            if pd.isna(inf):
-                inf = 0.0
-            current_shock = inf + decay_factor * current_shock
-            decayed_shocks.append(current_shock * 100)
+        inf = row['Monthly_Inflation']
+        if pd.isna(inf):
+            inf = 0.0
+        current_shock = inf + decay_factor * current_shock
+        decayed_shocks.append(current_shock * 100)
     df['Decayed_CPI_Shock_2020'] = decayed_shocks
     
     # Cumulative price increases since Jan 2019 and Jan 2020

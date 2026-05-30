@@ -160,10 +160,10 @@ export default function App() {
     return data.filter(row => row.Date >= '2018-01-31').map(row => row.Date).sort();
   }, [data]);
   const trainStartMonths = useMemo(() => {
-    return data.filter(row => row.Date >= '1980-01-31' && row.Date <= '2015-12-31').map(row => row.Date).sort();
+    return data.filter(row => row.Date >= '1980-01-31' && row.Date <= '2025-12-31').map(row => row.Date).sort();
   }, [data]);
   const trainEndMonths = useMemo(() => {
-    return data.filter(row => row.Date >= '2000-01-31' && row.Date <= '2022-12-31').map(row => row.Date).sort();
+    return data.filter(row => row.Date >= '2000-01-31' && row.Date <= '2026-05-31').map(row => row.Date).sort();
   }, [data]);
 
   // OLS Regression Solver
@@ -1031,6 +1031,9 @@ export default function App() {
       {/* Structured Editorial Footer */}
       <footer className="dashboard-footer" style={{ marginTop: '3rem' }}>
         <p>Data Pipeline Sources: Federal Reserve Bank of St. Louis (FRED) • Bureau of Labor Statistics • S&P Dow Jones Indices • U.S. Census Bureau</p>
+        <p style={{ marginTop: '0.3rem', fontSize: '0.8rem', opacity: 0.7 }}>
+          * Note: The final data points in the series (e.g. May 2026) utilize forward-filled values from the preceding months where official publication lags apply.
+        </p>
         <p style={{ marginTop: '0.4rem', opacity: 0.6 }}>Interactive Vibecession Storyboard • Built with React & Recharts</p>
       </footer>
     </div>
