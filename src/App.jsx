@@ -238,6 +238,24 @@ export default function App() {
     return merged;
   }, [data]);
 
+  // Aligned "Do-Say" Disconnect data for Chapter 5
+  const disconnectData = useMemo(() => {
+    if (data.length === 0) return [];
+    const baseRow = data.find(row => row.Date === '2020-01-31');
+    if (!baseRow) return [];
+    const baseSentiment = baseRow.Consumer_Sentiment || 99.8;
+    const baseSales = baseRow.Real_Retail_Sales || 198790.0;
+
+    return data
+      .filter(row => row.Date >= '2020-01-31')
+      .map(row => ({
+        Date: row.Date,
+        Normalized_Sentiment: row.Consumer_Sentiment ? (row.Consumer_Sentiment / baseSentiment) * 100 : null,
+        Normalized_Retail_Sales: row.Real_Retail_Sales ? (row.Real_Retail_Sales / baseSales) * 100 : null,
+        Policy_Uncertainty: row.Policy_Uncertainty
+      }));
+  }, [data]);
+
   // Compute stats for metrics bar
   const latestMetrics = useMemo(() => {
     if (data.length === 0) return {};
@@ -297,34 +315,41 @@ export default function App() {
       </header>
 
       {/* Chapters Navigation Tabs */}
-      <nav className="tab-navigation" style={{ background: 'var(--bg-card)', padding: '0.4rem', borderRadius: '50px', border: '1px solid var(--border-color)', alignSelf: 'flex-start', margin: '1rem 0' }}>
+      <nav className="tab-navigation" style={{ background: 'var(--bg-card)', padding: '0.4rem', borderRadius: '50px', border: '1px solid var(--border-color)', alignSelf: 'flex-start', margin: '1rem 0', display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-1' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-1'); setSandboxOpen(false); }}
-          style={{ borderRadius: '50px', padding: '0.6rem 1.5rem', fontSize: '0.95rem' }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
           1. The Vibe Gap
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-2' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-2'); setSandboxOpen(false); }}
-          style={{ borderRadius: '50px', padding: '0.6rem 1.5rem', fontSize: '0.95rem' }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
           2. Sticker Shock
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-3' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-3'); setSandboxOpen(false); }}
-          style={{ borderRadius: '50px', padding: '0.6rem 1.5rem', fontSize: '0.95rem' }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
           3. Credit & Capital
         </button>
         <button 
           className={`tab-btn ${activeChapter === 'chapter-4' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-4'); setSandboxOpen(false); }}
-          style={{ borderRadius: '50px', padding: '0.6rem 1.5rem', fontSize: '0.95rem' }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
         >
           4. Historical Overlay
+        </button>
+        <button 
+          className={`tab-btn ${activeChapter === 'chapter-5' ? 'active' : ''}`}
+          onClick={() => { setActiveChapter('chapter-5'); setSandboxOpen(false); }}
+          style={{ borderRadius: '50px', padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}
+        >
+          5. Peer Critique
         </button>
       </nav>
 
@@ -433,10 +458,38 @@ export default function App() {
                 </div>
               </>
             )}
+
+            {activeChapter === 'chapter-5' && (
+              <>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 5: Peer-Review Critique</h3>
+                <div className="theory-content" style={{ gap: '0.8rem', marginTop: '0.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                  <p>
+                    A rigorous review of the Unified Theory by our <strong>Macroeconomic Peer-Reviewer</strong> reveals several counter-arguments, behavioral caveats, and econometric corrections:
+                  </p>
+                  <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.5rem 0', listStyleType: 'disc' }}>
+                    <li>
+                      <strong>The Partisan Noise (~30%):</strong> Traditional sentiment indexes are heavily contaminated by "expressive responding". Research shows Republicans and Democrats use surveys to signal political disapproval. Using the sentiment of <em>Independent voters</em> removes this bias.
+                    </li>
+                    <li>
+                      <strong>The "Do-Say" Disconnect:</strong> While consumers tell survey-takers that sentiment is at recessionary lows, actual spending (PCE) remains at record highs. A 50-year low in unemployment (3.6%) has collapsed the <em>precautionary savings motive</em>, allowing consumers to comfortably spend down savings and take on credit card debt.
+                    </li>
+                    <li>
+                      <strong>The OECD/International Anomaly:</strong> European confidence fell due to real energy shocks and falling real wages, matching actual retail contraction. The U.S., however, has had G7-leading growth and positive real wages, yet sentiment fell to the same stagflationary depths, showing a U.S.-specific psychological anomaly.
+                    </li>
+                    <li>
+                      <strong>Econometric Violations:</strong> The standard OLS model violates linear assumptions due to <em>multicollinearity</em> (VIF &gt; 10) and <em>serial correlation</em> (Durbin-Watson = 0.651). Correcting with <strong>Newey-West standard errors</strong> renders the Federal Funds Rate statistically insignificant.
+                    </li>
+                  </ul>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
+                    For a full breakdown of the critique, see the report: <a href="https://github.com/mike10010100/vibecession/blob/main/vibecession_critique.md" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>vibecession_critique.md</a>.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* COLLAPSIBLE SANDBOX CONTROLS PANEL */}
-          {activeChapter !== 'chapter-4' && (
+          {activeChapter !== 'chapter-4' && activeChapter !== 'chapter-5' && (
             <div className="chart-card" style={{ padding: '1rem 1.5rem', gap: '0' }}>
               <button 
                 className="btn-toggle" 
@@ -486,6 +539,26 @@ export default function App() {
                           </select>
                         </div>
                       </div>
+
+                      {regressionResults.coefficients && (
+                        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-app)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Model Coefficients (OLS):</div>
+                          <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', color: 'var(--text-main)' }}>
+                            <div>R²: {(regressionResults.coefficients.R_Squared * 100).toFixed(1)}%</div>
+                            <div>Intercept: {regressionResults.coefficients.Intercept.toFixed(2)}</div>
+                            {Object.keys(regressionResults.coefficients).map(k => {
+                              if (k === 'Intercept' || k === 'R_Squared') return null;
+                              return <div key={k}>{k.replace(/_/g, ' ')}: {regressionResults.coefficients[k] >= 0 ? '+' : ''}{regressionResults.coefficients[k].toFixed(4)}</div>;
+                            })}
+                          </div>
+                          {regressionVars.Cumulative_CPI_Increase_2020 && regressionVars.Fed_Funds_Rate && (
+                            <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--danger-glow)', border: '1px solid rgba(244, 63, 94, 0.2)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
+                              <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '0.05rem' }} />
+                              <span><strong>Warning:</strong> High Multicollinearity (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are inflated, making coefficients unstable.</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
 
@@ -653,6 +726,30 @@ export default function App() {
                     <Line name="1978 Stagflation" type="monotone" dataKey="1978 Stagflation Crisis" stroke="var(--danger)" strokeWidth={1.5} dot={false} />
                     <Line name="2007 Great Recession" type="monotone" dataKey="2007 Great Recession" stroke="var(--primary)" strokeWidth={1.5} dot={false} />
                     <Line name="2020 Vibecession (Current)" type="monotone" dataKey="2020 Vibecession (Current)" stroke="var(--secondary)" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
+
+          {/* Chart 5: Peer Critique (The Do-Say Disconnect) */}
+          {activeChapter === 'chapter-5' && (
+            <>
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-bright)' }}>The "Do-Say" Disconnect (Index: Jan 2020 = 100)</h4>
+                <span className="chart-subtitle">Sentiment collapsed by half, while inflation-adjusted retail sales expanded by ~15%</span>
+              </div>
+              <div className="chart-wrapper" style={{ height: '380px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={disconnectData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#222736' : '#e2e8f0'} />
+                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
+                    <YAxis stroke="var(--text-muted)" fontSize={10} domain={[40, 130]} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
+                    <Line name="Sentiment Index" type="monotone" dataKey="Normalized_Sentiment" stroke="var(--primary)" strokeWidth={3} dot={false} />
+                    <Line name="Real Retail Sales Index" type="monotone" dataKey="Normalized_Retail_Sales" stroke="var(--success)" strokeWidth={3} dot={false} />
+                    <ReferenceLine y={100} stroke="var(--text-muted)" strokeDasharray="3 3" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
