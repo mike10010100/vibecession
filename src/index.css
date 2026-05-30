@@ -606,3 +606,45 @@ h1 {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Custom Premium Tooltip Styling */
+.tooltip-container {
+  position: relative;
+  display: inline;
+  cursor: help;
+  border-bottom: 1px dotted var(--text-muted);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tooltip-container:hover {
+  border-bottom-color: var(--primary);
+  color: var(--text-bright);
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #0f172a; /* Slate 900 background for readability */
+  border: 1px solid var(--border-color);
+  color: #e2e8f0; /* Slate 200 text */
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  width: 240px;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  text-align: left;
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
+.tooltip-container:hover .tooltip-content {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

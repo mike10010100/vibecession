@@ -50,6 +50,31 @@ function solveOLS(y, X) {
   }
 }
 
+// Reusable Tooltip Component for Technical Terms
+function GlossaryTooltip({ term, definition }) {
+  return (
+    <span className="tooltip-container">
+      {term}
+      <span className="tooltip-content">{definition}</span>
+    </span>
+  );
+}
+
+const VAR_DEFINITIONS = {
+  Unemployment_Rate: "The percentage of the labor force that is jobless. Historically one of the strongest drivers of consumer sentiment.",
+  CPI_YoY: "Consumer Price Index Year-over-Year change. Measures the annual rate of inflation.",
+  Decayed_CPI_Shock_2020: "A behavioral inflation index where price shock pain decays 50% per year as consumers adapt.",
+  Cumulative_CPI_Increase_2020: "Total cumulative consumer price level increase since January 2020.",
+  Personal_Savings_Rate: "The percentage of disposable personal income that households save rather than spend.",
+  Mortgage_30Y: "Average interest rate on a 30-year fixed rate mortgage in the US.",
+  Fed_Funds_Rate: "The Federal Reserve's target interest rate for overnight bank lending.",
+  Real_Wage_Index_YoY: "Inflation-adjusted hourly wage growth, showing change in actual purchasing power.",
+  Case_Shiller_Index: "The S&P CoreLogic Case-Shiller index measuring U.S. residential home prices.",
+  Real_Retail_Sales: "Consumer retail spending adjusted for inflation, showing physical volume of spending.",
+  Gas_Prices: "Average regular unleaded gasoline price. Highly visible and psychologically impactful.",
+  Policy_Uncertainty: "An index measuring policy uncertainty based on news coverage and tax expirations."
+};
+
 export default function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -444,8 +469,8 @@ export default function App() {
                     The vibecession is anchored in a three-pillar cash-flow squeeze on the bottom 60% of households:
                   </p>
                   <ul style={{ paddingLeft: '1.25rem', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.9rem' }}>
-                    <li><strong>Sticker Shock & Loss Aversion:</strong> Necessities like food (+33.5%) and rent (+31.8%) outpaced wages, and loss aversion makes price shocks feel twice as painful as equivalent wage gains.</li>
-                    <li><strong>Savings Depletion & Debt:</strong> Consumers depleted their savings buffers (savings rate fell from 25% to under 4%) and took on high-interest credit card debt.</li>
+                    <li><strong>Sticker Shock & <GlossaryTooltip term="Loss Aversion" definition="Under Prospect Theory, consumers feel the pain of price increases about twice as intensely as equivalent wage gains." />:</strong> Necessities like food (+33.5%) and rent (+31.8%) outpaced wages, and loss aversion makes price shocks feel twice as painful as equivalent wage gains.</li>
+                    <li><strong>Savings Depletion & Debt:</strong> Consumers depleted their <GlossaryTooltip term="savings buffers" definition="Personal Savings Rate collapsed from 15% in 2020 to under 4% by 2023." /> (savings rate fell from 25% to under 4%) and took on high-interest credit card debt.</li>
                     <li><strong>Housing Lockout:</strong> Doubled mortgage payments froze housing inventory and locked out prospective buyers.</li>
                   </ul>
                   
@@ -483,11 +508,11 @@ export default function App() {
                 <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 3: The "Do-Say" Disconnect</h3>
                 <div className="theory-content" style={{ gap: '1rem', marginTop: '0.5rem' }}>
                   <p>
-                    Why did aggregate consumer spending (PCE) remain robust while sentiment crashed? This is the **Do-Say Disconnect**, driven by two parallel forces:
+                    Why did aggregate consumer spending (<GlossaryTooltip term="PCE" definition="Personal Consumption Expenditures: a measure of U.S. consumer spending on goods and services." />) remain robust while sentiment crashed? This is the **Do-Say Disconnect**, driven by two parallel forces:
                   </p>
                   <ul style={{ paddingLeft: '1.25rem', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.9rem' }}>
-                    <li><strong>Precautionary Savings Collapse:</strong> In a 50-year low unemployment market (3.6%), consumers felt high job security. This collapsed their precautionary savings motive, prompting them to continue spending despite cost-of-living anxiety.</li>
-                    <li><strong>Partisan Expressive Responding:</strong> Sentiment indexes are increasingly contaminated by political polarization. Consumers use surveys to "boo" the sitting administration rather than report actual financial distress.</li>
+                    <li><strong><GlossaryTooltip term="Precautionary Savings" definition="Savings held as a buffer against economic risks like job loss. When job security is high, the motive to save collapses." /> Collapse:</strong> In a 50-year low unemployment market (3.6%), consumers felt high job security. This collapsed their precautionary savings motive, prompting them to continue spending despite cost-of-living anxiety.</li>
+                    <li><strong>Partisan <GlossaryTooltip term="Expressive Responding" definition="When survey respondents give politically biased answers to support or boo an administration, rather than reporting true personal finances." />:</strong> Sentiment indexes are increasingly contaminated by political polarization. Consumers use surveys to "boo" the sitting administration rather than report actual financial distress.</li>
                   </ul>
                   <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
                     As shown on the chart, aggregate sentiment fell to historical lows while real retail sales expanded by **~15%** since 2020.
@@ -578,7 +603,13 @@ export default function App() {
                                 onChange={(e) => setRegressionVars({ ...regressionVars, [k]: e.target.checked })}
                                 style={{ accentColor: 'var(--primary)' }}
                               />
-                              <span>{k.replace(/_/g, ' ')}</span>
+                              <span>
+                                {VAR_DEFINITIONS[k] ? (
+                                  <GlossaryTooltip term={k.replace(/_/g, ' ')} definition={VAR_DEFINITIONS[k]} />
+                                ) : (
+                                  k.replace(/_/g, ' ')
+                                )}
+                              </span>
                             </label>
                           ))}
                         </div>
@@ -599,14 +630,14 @@ export default function App() {
                       </div>
                       {regressionResults.coefficients && (
                         <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-app)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Model Diagnostics (OLS):</div>
+                          <div style={{ fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-bright)' }}>Model Diagnostics (<GlossaryTooltip term="OLS" definition="Ordinary Least Squares: a method to estimate relationships by minimizing squared differences." />):</div>
                           <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span>R-Squared (R²):</span>
+                              <span><GlossaryTooltip term="R-Squared (R²)" definition="Percentage of sentiment variance explained by the model. Higher is better." />:</span>
                               <strong style={{ color: 'var(--text-bright)' }}>{(regressionResults.coefficients.R_Squared * 100).toFixed(1)}%</strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span>Durbin-Watson (DW):</span>
+                              <span><GlossaryTooltip term="Durbin-Watson (DW)" definition="Tests for residual autocorrelation. 2.0 is ideal; <1.5 indicates positive autocorrelation." />:</span>
                               <strong style={{ color: regressionResults.durbinWatson < 1.0 ? 'var(--danger)' : regressionResults.durbinWatson < 1.5 ? 'var(--warning)' : 'var(--success)' }}>
                                 {regressionResults.durbinWatson?.toFixed(3)}
                               </strong>
@@ -616,7 +647,7 @@ export default function App() {
                           <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', color: 'var(--text-main)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.1rem', marginBottom: '0.1rem', color: 'var(--text-muted)' }}>
                               <span>Variable</span>
-                              <span>Coeff (VIF)</span>
+                              <span>Coeff (<GlossaryTooltip term="VIF" definition="Variance Inflation Factor: measures multicollinearity. VIF > 10 indicates redundancy." />)</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span>Intercept</span>
@@ -629,7 +660,13 @@ export default function App() {
                               const isVifHigh = vif > 10;
                               return (
                                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', color: isVifHigh ? 'var(--danger)' : 'inherit' }}>
-                                  <span>{k.replace(/_/g, ' ')}</span>
+                                  <span>
+                                    {VAR_DEFINITIONS[k] ? (
+                                      <GlossaryTooltip term={k.replace(/_/g, ' ')} definition={VAR_DEFINITIONS[k]} />
+                                    ) : (
+                                      k.replace(/_/g, ' ')
+                                    )}
+                                  </span>
                                   <span>
                                     {coeff >= 0 ? '+' : ''}{coeff.toFixed(4)} 
                                     <span style={{ color: isVifHigh ? 'var(--danger)' : 'var(--text-muted)', marginLeft: '0.4rem' }}>
@@ -643,7 +680,7 @@ export default function App() {
                           {regressionVars.Cumulative_CPI_Increase_2020 && regressionVars.Fed_Funds_Rate && (
                             <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--danger-glow)', border: '1px solid rgba(244, 63, 94, 0.2)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
                               <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '0.05rem' }} />
-                              <span><strong>Warning:</strong> High Multicollinearity (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are unstable.</span>
+                              <span><strong>Warning:</strong> High <GlossaryTooltip term="Multicollinearity" definition="When two or more predictor variables are highly correlated, making estimates unstable." /> (VIF &gt; 10) detected between Cumulative CPI and Fed Funds Rate. Standard errors are unstable.</span>
                             </div>
                           )}
                           <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--primary-glow)', border: '1px solid rgba(99, 102, 241, 0.2)', color: 'var(--text-bright)', borderRadius: '6px', fontSize: '0.75rem', display: 'flex', gap: '0.4rem' }}>
