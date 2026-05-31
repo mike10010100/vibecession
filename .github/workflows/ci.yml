@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, optimize-mobile-responsiveness]
+    branches: [main]
   pull_request:
-    branches: [main, optimize-mobile-responsiveness]
+    branches: [main]
 
 jobs:
   build-and-test:
