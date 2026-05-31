@@ -29,7 +29,8 @@ EXTENDED_SERIES_MAP = {
     'A067RX1A020NBEA': 'Real_Disposable_Income',
     'TERMCBCCINTNS': 'Credit_Card_APR',
     'TERMCBAUTO48NS': 'Auto_Loan_Rate',
-    'CUSR0000SETA02': 'Auto_Insurance_CPI'
+    'CUSR0000SETA02': 'Auto_Insurance_CPI',
+    'PMSAVE': 'Personal_Savings_Dollars'
 }
 
 def restore_missing_csvs():

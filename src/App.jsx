@@ -88,6 +88,7 @@ export default function App() {
   const [activeChapter, setActiveChapter] = useState('chapter-1');
   const [sandboxOpen, setSandboxOpen] = useState(false);
   const [cashFlowSubTab, setCashFlowSubTab] = useState('prices'); // 'prices' | 'capital'
+  const [savingsView, setSavingsView] = useState('rates'); // 'rates' | 'dollars'
   
   // Chapter 3 Overlays
   const [showWealthEffect, setShowWealthEffect] = useState(false);
@@ -389,9 +390,13 @@ export default function App() {
       Mortgage_30Y: latest.Mortgage_30Y,
       Delinquency_Rate: latest.Credit_Card_Delinquency_Rate,
       Savings_Rate: latest.Personal_Savings_Rate,
+      Personal_Savings_Dollars: latest.Personal_Savings_Dollars,
+      Credit_Card_APR: latest.Credit_Card_APR,
       Vibe_Gap: predRow?.Vibe_Gap || 0,
       Cumulative_CPI: (((latest.CPI_All_Items / baseRow.CPI_All_Items) - 1) * 100),
       Cumulative_Wages: (((latest.Average_Hourly_Earnings / baseRow.Average_Hourly_Earnings) - 1) * 100),
+      Cumulative_Food: (((latest.CPI_Food / baseRow.CPI_Food) - 1) * 100),
+      Cumulative_Insurance: (((latest.Auto_Insurance_CPI / baseRow.Auto_Insurance_CPI) - 1) * 100),
       Loss_Aversion_Index: 100 + (((latest.Average_Hourly_Earnings / baseRow.Average_Hourly_Earnings) - 1) * 100) - (lossAversionCoef * (((latest.CPI_All_Items / baseRow.CPI_All_Items) - 1) * 100))
     };
   }, [data, regressionResults, baseMonth, lossAversionCoef]);
@@ -578,22 +583,55 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Savings Rate</span>
-                      <strong style={{ fontSize: '1.5rem', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <PiggyBank size={20} />
-                        <span>{latestMetrics.Savings_Rate?.toFixed(1)}%</span>
-                      </strong>
+                  {cashFlowSubTab === 'prices' ? (
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Food Prices (Cum.)</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <TrendingDown size={20} style={{ transform: 'rotate(180deg)' }} />
+                          <span>+{latestMetrics.Cumulative_Food?.toFixed(1)}%</span>
+                        </strong>
+                      </div>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Auto Insurance (Cum.)</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--purple)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <ShieldAlert size={20} />
+                          <span>+{latestMetrics.Cumulative_Insurance?.toFixed(1)}%</span>
+                        </strong>
+                      </div>
                     </div>
-                    <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>30Y Mortgage Rate</span>
-                      <strong style={{ fontSize: '1.5rem', color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Landmark size={20} />
-                        <span>{latestMetrics.Mortgage_30Y?.toFixed(1)}%</span>
-                      </strong>
+                  ) : (
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Savings Rate</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <PiggyBank size={20} />
+                          <span>{latestMetrics.Savings_Rate?.toFixed(1)}%</span>
+                        </strong>
+                      </div>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Liquid Savings</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <PiggyBank size={20} />
+                          <span>${latestMetrics.Personal_Savings_Dollars?.toFixed(0)}B</span>
+                        </strong>
+                      </div>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>30Y Mortgage Rate</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <Landmark size={20} />
+                          <span>{latestMetrics.Mortgage_30Y?.toFixed(1)}%</span>
+                        </strong>
+                      </div>
+                      <div style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', padding: '1rem 1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Credit Card APR</span>
+                        <strong style={{ fontSize: '1.5rem', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <CreditCard size={20} />
+                          <span>{latestMetrics.Credit_Card_APR?.toFixed(1)}%</span>
+                        </strong>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </>
             )}
@@ -1078,49 +1116,121 @@ export default function App() {
           {/* Chart 3: Cash-Flow Squeeze (Savings & Borrowing Costs) */}
           {activeChapter === 'chapter-2' && cashFlowSubTab === 'capital' && (
             <>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Household Cash Flow Indicators</h4>
-                <span className="chart-subtitle">Delinquencies and rates since 2015</span>
+              <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>
+                    {savingsView === 'rates' ? 'Household Cash Flow Indicators' : 'Personal Savings Drawdown'}
+                  </h4>
+                  <span className="chart-subtitle">
+                    {savingsView === 'rates' ? 'Delinquencies and rates since 2015' : 'Absolute personal savings in billions of dollars (SAAR)'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: '30px', padding: '2px' }}>
+                  <button 
+                    onClick={() => setSavingsView('rates')}
+                    style={{ 
+                      fontSize: '0.7rem', 
+                      padding: '0.35rem 0.75rem', 
+                      borderRadius: '20px', 
+                      background: savingsView === 'rates' ? 'var(--primary)' : 'transparent', 
+                      color: 'var(--text-bright)', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      transition: 'all 0.2s', 
+                      fontWeight: 600 
+                    }}
+                  >
+                    Rates & Delinquencies
+                  </button>
+                  <button 
+                    onClick={() => setSavingsView('dollars')}
+                    style={{ 
+                      fontSize: '0.7rem', 
+                      padding: '0.35rem 0.75rem', 
+                      borderRadius: '20px', 
+                      background: savingsView === 'dollars' ? 'var(--primary)' : 'transparent', 
+                      color: 'var(--text-bright)', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      transition: 'all 0.2s', 
+                      fontWeight: 600 
+                    }}
+                  >
+                    Savings Drawdown ($B)
+                  </button>
+                </div>
               </div>
-              <div className="chart-wrapper" style={{ height: '380px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                    <defs>
-                      <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#059669" />
-                      </linearGradient>
-                      <linearGradient id="warningGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#fb923c" />
-                        <stop offset="100%" stopColor="#f97316" />
-                      </linearGradient>
-                      <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#fb923c" />
-                        <stop offset="100%" stopColor="#ea580c" />
-                      </linearGradient>
-                      <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#60a5fa" />
-                        <stop offset="100%" stopColor="#3b82f6" />
-                      </linearGradient>
-                      <linearGradient id="dangerGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#f43f5e" />
-                        <stop offset="100%" stopColor="#e11d48" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis yAxisId="percent" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis yAxisId="distress" orientation="right" stroke="var(--text-muted)" fontSize={10} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
-                    <Line yAxisId="percent" name="Savings Rate (%)" type="monotone" dataKey="Personal_Savings_Rate" stroke="url(#successGrad)" strokeWidth={2} dot={false} />
-                    <Line yAxisId="percent" name="30Y Mortgage (%)" type="monotone" dataKey="Mortgage_30Y" stroke="url(#warningGrad)" strokeWidth={2} dot={false} />
-                    <Line yAxisId="percent" name="Credit Card APR (%)" type="monotone" dataKey="Credit_Card_APR" stroke="url(#orangeGrad)" strokeWidth={2} dot={false} />
-                    <Line yAxisId="percent" name="Auto Loan Rate (%)" type="monotone" dataKey="Auto_Loan_Rate" stroke="url(#blueGrad)" strokeWidth={2} dot={false} />
-                    <Line yAxisId="distress" name="Card Delinquency (%)" type="monotone" dataKey="Credit_Card_Delinquency_Rate" stroke="url(#dangerGrad)" strokeWidth={2.5} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+
+              {savingsView === 'rates' ? (
+                <div className="chart-wrapper" style={{ height: '380px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="warningGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#fb923c" />
+                          <stop offset="100%" stopColor="#f97316" />
+                        </linearGradient>
+                        <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#fb923c" />
+                          <stop offset="100%" stopColor="#ea580c" />
+                        </linearGradient>
+                        <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#60a5fa" />
+                          <stop offset="100%" stopColor="#3b82f6" />
+                        </linearGradient>
+                        <linearGradient id="dangerGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#f43f5e" />
+                          <stop offset="100%" stopColor="#e11d48" />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
+                      <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
+                      <YAxis yAxisId="percent" stroke="var(--text-muted)" fontSize={10} />
+                      <YAxis yAxisId="distress" orientation="right" stroke="var(--text-muted)" fontSize={10} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
+                      <Line yAxisId="percent" name="Savings Rate (%)" type="monotone" dataKey="Personal_Savings_Rate" stroke="url(#successGrad)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="percent" name="30Y Mortgage (%)" type="monotone" dataKey="Mortgage_30Y" stroke="url(#warningGrad)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="percent" name="Credit Card APR (%)" type="monotone" dataKey="Credit_Card_APR" stroke="url(#orangeGrad)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="percent" name="Auto Loan Rate (%)" type="monotone" dataKey="Auto_Loan_Rate" stroke="url(#blueGrad)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="distress" name="Card Delinquency (%)" type="monotone" dataKey="Credit_Card_Delinquency_Rate" stroke="url(#dangerGrad)" strokeWidth={2.5} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="chart-wrapper" style={{ height: '380px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="savingsGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#3b82f6" />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
+                      <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
+                      <YAxis stroke="var(--text-muted)" fontSize={10} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
+                      
+                      {/* Highlight the Savings Drawdown period */}
+                      <ReferenceArea x1="2020-04-30" x2="2022-06-30" fill="rgba(244, 63, 94, 0.05)" label={{ value: 'Savings Drawdown: -$5.5T', position: 'top', fill: 'var(--danger)', fontSize: 10, fontWeight: 600 }} />
+                      
+                      {/* Reference line for the 2020 pandemic stimulus peak */}
+                      <ReferenceLine y={5955.2} stroke="var(--success)" strokeDasharray="3 3" label={{ value: 'Peak: $5.95T', position: 'top', fill: 'var(--success)', fontSize: 9 }} />
+                      
+                      {/* Reference line for the 2022 drawdown bottom */}
+                      <ReferenceLine y={418.8} stroke="var(--danger)" strokeDasharray="3 3" label={{ value: 'Bottom: $418B', position: 'bottom', fill: 'var(--danger)', fontSize: 9 }} />
+
+                      <Line name="Personal Savings ($ Billions)" type="monotone" dataKey="Personal_Savings_Dollars" stroke="url(#savingsGrad)" strokeWidth={3} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </>
           )}
 
