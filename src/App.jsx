@@ -83,6 +83,15 @@ export default function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState('dark');
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Detect mobile screen width
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Navigation: Story Chapters
   const [activeChapter, setActiveChapter] = useState('chapter-1');
@@ -436,7 +445,7 @@ export default function App() {
       </header>
 
       {/* Chapters Navigation Tabs */}
-      <nav className="tab-navigation" style={{ alignSelf: 'flex-start', margin: '1rem 0' }}>
+      <nav className="tab-navigation">
         <button 
           className={`tab-btn ${activeChapter === 'chapter-1' ? 'active' : ''}`}
           onClick={() => { setActiveChapter('chapter-1'); setSandboxOpen(false); }}
@@ -490,7 +499,7 @@ export default function App() {
           }}>
             {activeChapter === 'chapter-1' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 1: The Paradox</h3>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 1: The Paradox</h2>
                 <div className="theory-content" style={{ marginTop: '0.5rem' }}>
                   <div className="abstract-card">
                     <strong>Abstract:</strong> The "Vibecession" (2020–2026) describes the historic disconnect where consumer sentiment plummeted to Great Recession depths despite a 50-year low in unemployment and robust GDP growth. This storyboard presents the <strong>Dual-Core Hypothesis</strong>: that bad vibes are not a psychological delusion, but a rational response to the combination of a cash-flow squeeze (permanent necessity price increases, savings depletion, record credit APRs) and a cognitive perception filter (partisan responding, labor-market security, and high discretionary spending by the wealthy).
@@ -524,7 +533,7 @@ export default function App() {
 
             {activeChapter === 'chapter-2' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 2: The Cash-Flow Squeeze</h3>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 2: The Cash-Flow Squeeze</h2>
                 <div className="theory-content" style={{ marginTop: '0.5rem' }}>
                   <p>
                     The vibecession is anchored in a three-pillar cash-flow squeeze on the bottom 60% of U.S. households:
@@ -638,7 +647,7 @@ export default function App() {
 
             {activeChapter === 'chapter-3' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 3: The "Do-Say" Disconnect</h3>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 3: The "Do-Say" Disconnect</h2>
                 <div className="theory-content" style={{ marginTop: '0.5rem' }}>
                   <p>
                     Why did aggregate consumer spending (<GlossaryTooltip term="PCE" definition="Personal Consumption Expenditures: a measure of U.S. consumer spending on goods and services." />) remain robust while sentiment crashed? This is the **Do-Say Disconnect**, driven by two key forces:
@@ -679,7 +688,7 @@ export default function App() {
 
             {activeChapter === 'chapter-4' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 4: Aligned Histories & Controls</h3>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 4: Aligned Histories & Controls</h2>
                 <div className="theory-content" style={{ marginTop: '0.5rem' }}>
                   <p>
                     Aligning economic cycles since 1978 reveals that the 2020 cycle is uniquely persistent. In past recessions, commodity prices collapsed, providing rapid cost relief. In the current era, necessity prices stabilized at permanently elevated baselines, keeping the cash squeeze active.
@@ -728,7 +737,7 @@ export default function App() {
 
             {activeChapter === 'conclusion' && (
               <>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 5: Summary Conclusion</h3>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--text-bright)' }}>Chapter 5: Summary Conclusion</h2>
                 <div className="theory-content" style={{ marginTop: '0.5rem' }}>
                   <p>
                     The "Vibecession" is not a psychological delusion. It is a rational response to a structural realignment of household finance and political psychology.
@@ -814,7 +823,7 @@ export default function App() {
                         </div>
                       </div>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="sandbox-grid-2col">
                         <div className="selector-group">
                           <label>Training Start</label>
                           <select className="custom-select" value={trainStart} onChange={(e) => setTrainStart(e.target.value)}>
@@ -878,13 +887,13 @@ export default function App() {
 
                           {/* Coefficients & VIF Table */}
                           <div style={{ background: 'rgba(255, 255, 255, 0.015)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                            <div className="coefficients-grid" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                               <span>Variable</span>
                               <span style={{ textAlign: 'right' }}>Coeff (Impact)</span>
                               <span style={{ textAlign: 'right' }}><GlossaryTooltip term="VIF" definition="Variance Inflation Factor: measures multicollinearity. VIF > 10 indicates redundancy." /> (Collinear)</span>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', alignItems: 'center' }}>
+                              <div className="coefficients-grid">
                                 <span style={{ fontWeight: 600, color: 'var(--text-bright)' }}>Intercept</span>
                                 <span style={{ textAlign: 'right', fontWeight: 700 }}>{regressionResults.coefficients.Intercept.toFixed(2)}</span>
                                 <span style={{ textAlign: 'right', color: 'var(--text-muted)' }}>—</span>
@@ -899,7 +908,7 @@ export default function App() {
                                 // Scale bar for visualization
                                 const percentWidth = Math.min(Math.abs(coeff) * 20, 100);
                                 return (
-                                  <div key={k} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', alignItems: 'center', color: isVifHigh ? 'var(--danger)' : 'var(--text-main)' }}>
+                                  <div key={k} className="coefficients-grid" style={{ color: isVifHigh ? 'var(--danger)' : 'var(--text-main)' }}>
                                     <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                       {VAR_DEFINITIONS[k] ? (
                                         <GlossaryTooltip term={k.replace(/_/g, ' ')} definition={VAR_DEFINITIONS[k]} />
@@ -953,7 +962,7 @@ export default function App() {
                     <>
                       {cashFlowSubTab === 'prices' ? (
                         <>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1.25rem' }}>
+                          <div className="sandbox-grid-2col">
                             <div className="selector-group">
                               <label>Base Month</label>
                               <select className="custom-select" value={baseMonth} onChange={(e) => setBaseMonth(e.target.value)}>
@@ -1017,7 +1026,7 @@ export default function App() {
           {activeChapter === 'chapter-1' && (
             <>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Actual vs. Predicted Sentiment</h4>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Actual vs. Predicted Sentiment</h3>
                 <span className="chart-subtitle">Shaded area represents the "Vibe Gap" deflection (2020-2026)</span>
               </div>
               <div className="chart-wrapper" style={{ height: '380px' }}>
@@ -1027,7 +1036,7 @@ export default function App() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart 
                       data={regressionResults.predictedData.filter(row => row.Date >= '2010-01-31')}
-                      margin={{ top: 5, right: 10, left: -25, bottom: 5 }}
+                      margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}
                     >
                       <defs>
                         <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="0">
@@ -1040,8 +1049,19 @@ export default function App() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                      <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                      <YAxis domain={[40, 110]} stroke="var(--text-muted)" fontSize={10} />
+                      <XAxis 
+                        dataKey="Date" 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                      />
+                      <YAxis 
+                        domain={[40, 110]} 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        width={isMobile ? 30 : 40}
+                        tickFormatter={(v) => Math.round(v)}
+                      />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                       <Line name="Actual Sentiment" type="monotone" dataKey="Consumer_Sentiment" stroke="url(#primaryGrad)" strokeWidth={3} dot={false} />
@@ -1058,12 +1078,12 @@ export default function App() {
           {activeChapter === 'chapter-2' && cashFlowSubTab === 'prices' && (
             <>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Cumulative Price Shock vs. Wages</h4>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Cumulative Price Shock vs. Wages</h3>
                 <span className="chart-subtitle">Calculated relative to base month: {baseMonth}</span>
               </div>
               <div className="chart-wrapper" style={{ height: '380px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={cumulativeData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                  <LineChart data={cumulativeData} margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#6366f1" />
@@ -1095,8 +1115,18 @@ export default function App() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis stroke="var(--text-muted)" fontSize={10} />
+                    <XAxis 
+                      dataKey="Date" 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                    />
+                    <YAxis 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      width={isMobile ? 30 : 40}
+                      tickFormatter={(v) => Math.round(v)}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                     {visibleStickerLines.Wages && <Line name="Wages (%)" type="monotone" dataKey="Cumulative_Wages" stroke="url(#successGrad)" strokeWidth={2} dot={false} />}
@@ -1118,9 +1148,9 @@ export default function App() {
             <>
               <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>
+                  <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>
                     {savingsView === 'rates' ? 'Household Cash Flow Indicators' : 'Personal Savings Drawdown'}
-                  </h4>
+                  </h3>
                   <span className="chart-subtitle">
                     {savingsView === 'rates' ? 'Delinquencies and rates since 2015' : 'Absolute personal savings in billions of dollars (SAAR)'}
                   </span>
@@ -1160,11 +1190,11 @@ export default function App() {
                   </button>
                 </div>
               </div>
-
+ 
               {savingsView === 'rates' ? (
                 <div className="chart-wrapper" style={{ height: '380px' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}>
                       <defs>
                         <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="#10b981" />
@@ -1188,9 +1218,27 @@ export default function App() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                      <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                      <YAxis yAxisId="percent" stroke="var(--text-muted)" fontSize={10} />
-                      <YAxis yAxisId="distress" orientation="right" stroke="var(--text-muted)" fontSize={10} />
+                      <XAxis 
+                        dataKey="Date" 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                      />
+                      <YAxis 
+                        yAxisId="percent" 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        width={isMobile ? 30 : 40}
+                        tickFormatter={(v) => Math.round(v)}
+                      />
+                      <YAxis 
+                        yAxisId="distress" 
+                        orientation="right" 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        width={isMobile ? 25 : 35}
+                        tickFormatter={(v) => Math.round(v)}
+                      />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                       <Line yAxisId="percent" name="Savings Rate (%)" type="monotone" dataKey="Personal_Savings_Rate" stroke="url(#successGrad)" strokeWidth={2} dot={false} />
@@ -1204,7 +1252,7 @@ export default function App() {
               ) : (
                 <div className="chart-wrapper" style={{ height: '380px' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                    <LineChart data={data.filter(row => row.Date >= '2015-01-31')} margin={{ top: 15, right: isMobile ? 5 : 15, left: isMobile ? 0 : -5, bottom: 5 }}>
                       <defs>
                         <linearGradient id="savingsGrad" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="#10b981" />
@@ -1212,8 +1260,18 @@ export default function App() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                      <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                      <YAxis stroke="var(--text-muted)" fontSize={10} />
+                      <XAxis 
+                        dataKey="Date" 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                      />
+                      <YAxis 
+                        stroke="var(--text-muted)" 
+                        fontSize={10} 
+                        width={isMobile ? 35 : 50}
+                        tickFormatter={(v) => Math.round(v)}
+                      />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                       
@@ -1238,7 +1296,7 @@ export default function App() {
           {activeChapter === 'chapter-3' && (
             <>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>The "Do-Say" Disconnect (Index: Jan 2020 = 100)</h4>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>The "Do-Say" Disconnect (Index: Jan 2020 = 100)</h3>
                 <span className="chart-subtitle">Sentiment collapsed by half, while inflation-adjusted retail sales expanded by ~15%</span>
               </div>
               
@@ -1272,7 +1330,7 @@ export default function App() {
 
               <div className="chart-wrapper" style={{ height: '380px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={disconnectData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                  <LineChart data={disconnectData} margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#6366f1" />
@@ -1296,8 +1354,19 @@ export default function App() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis stroke="var(--text-muted)" fontSize={10} domain={[40, 160]} />
+                    <XAxis 
+                      dataKey="Date" 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                    />
+                    <YAxis 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      domain={[40, 160]} 
+                      width={isMobile ? 30 : 40}
+                      tickFormatter={(v) => Math.round(v)}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                     <Line name="Sentiment Index" type="monotone" dataKey="Normalized_Sentiment" stroke="url(#primaryGrad)" strokeWidth={3} dot={false} />
@@ -1322,12 +1391,12 @@ export default function App() {
           {activeChapter === 'chapter-4' && (
             <>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Aligned Sentiment Trajectories</h4>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Aligned Sentiment Trajectories</h3>
                 <span className="chart-subtitle">X-Axis aligned by Month 0 (sentiment peak prior to cycle trough)</span>
               </div>
               <div className="chart-wrapper" style={{ height: '380px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={historicalOverlayData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                  <LineChart data={historicalOverlayData} margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="dangerGrad" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#f43f5e" />
@@ -1344,7 +1413,13 @@ export default function App() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
                     <XAxis dataKey="Month" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis domain={[40, 110]} stroke="var(--text-muted)" fontSize={10} />
+                    <YAxis 
+                      domain={[40, 110]} 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      width={isMobile ? 30 : 40}
+                      tickFormatter={(v) => Math.round(v)}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                     <Line name="1978 Stagflation" type="monotone" dataKey="1978 Stagflation Crisis" stroke="url(#dangerGrad)" strokeWidth={1.5} dot={false} />
@@ -1360,12 +1435,12 @@ export default function App() {
           {activeChapter === 'conclusion' && (
             <>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Optimal Econometric Model vs. Actual Sentiment</h4>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>Optimal Econometric Model vs. Actual Sentiment</h3>
                 <span className="chart-subtitle">Modeling sentiment with Unemployment, Decayed CPI, Savings Rate, and Mortgage Rates (R² ~59.4%)</span>
               </div>
               <div className="chart-wrapper" style={{ height: '380px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={conclusionChartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                  <LineChart data={conclusionChartData} margin={{ top: 5, right: isMobile ? 5 : 10, left: isMobile ? 0 : -10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="primaryGrad" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#6366f1" />
@@ -1377,8 +1452,19 @@ export default function App() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'} />
-                    <XAxis dataKey="Date" stroke="var(--text-muted)" fontSize={10} />
-                    <YAxis domain={[40, 110]} stroke="var(--text-muted)" fontSize={10} />
+                    <XAxis 
+                      dataKey="Date" 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      tickFormatter={(d) => isMobile ? d.split('-')[0] : d}
+                    />
+                    <YAxis 
+                      domain={[40, 110]} 
+                      stroke="var(--text-muted)" 
+                      fontSize={10} 
+                      width={isMobile ? 30 : 40}
+                      tickFormatter={(v) => Math.round(v)}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }} />
                     <Line name="Actual Sentiment" type="monotone" dataKey="Actual Sentiment" stroke="url(#primaryGrad)" strokeWidth={3} dot={false} />

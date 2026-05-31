@@ -15,7 +15,7 @@
   /* Softer, highly readable text colors for reading comfort */
   --text-main: #cbd5e1;       /* Slate 300 - High contrast, soft reading */
   --text-bright: #f8fafc;     /* Slate 50 - Sharp headings */
-  --text-muted: #64748b;      /* Slate 500 - Secondary text */
+  --text-muted: #8897a7;      /* Higher contrast for WCAG AA in dark mode */
   
   /* Vibrant Custom Accents */
   --primary: #6366f1;         /* Electric Indigo */
@@ -55,7 +55,7 @@
   
   --text-main: #334155;       /* Slate 700 - Highly readable */
   --text-bright: #0f172a;     /* Slate 900 - Dark headers */
-  --text-muted: #64748b;      /* Slate 500 */
+  --text-muted: #5a6a7c;      /* Higher contrast for WCAG AA in light mode */
   
   --primary-glow: rgba(99, 102, 241, 0.08);
   --secondary-glow: rgba(217, 70, 239, 0.08);
@@ -225,6 +225,8 @@ h1 {
   -webkit-backdrop-filter: blur(16px);
   gap: 0.25rem;
   box-shadow: var(--shadow-sm);
+  align-self: flex-start;
+  margin: 1rem 0;
 }
 
 :root[class="light"] .tab-navigation {
@@ -245,6 +247,7 @@ h1 {
   cursor: pointer;
   transition: all var(--transition-normal);
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -260,6 +263,27 @@ h1 {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+}
+
+@media (max-width: 768px) {
+  .tab-navigation {
+    align-self: stretch;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.4rem 0.5rem;
+    border-radius: 24px;
+  }
+  .tab-navigation::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-btn {
+    flex: 0 0 auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* Split Column Layout */
@@ -292,6 +316,13 @@ h1 {
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
   position: relative;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chart-card, .theory-card {
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
 }
 
 .chart-card::after, .theory-card::after {
@@ -948,4 +979,33 @@ input[type="checkbox"]:checked::after {
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
   margin-bottom: 2px;
+}
+
+/* Responsive Sandbox Grid for Drawer */
+.sandbox-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .sandbox-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* Responsive Grid for OLS Coefficients Table */
+.coefficients-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .coefficients-grid {
+    grid-template-columns: 1.2fr 1.1fr 0.6fr;
+    font-size: 0.75rem;
+  }
 }
