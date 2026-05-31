@@ -72,18 +72,35 @@ const VAR_DEFINITIONS = {
     'Consumer Price Index proxy for passenger auto insurance, showing premium inflation of 20%+ per year.',
 }
 
+// Y-Axis Tick Formatter that rounds integers, but displays one decimal place for fractions to avoid duplicate ticks
+const formatYAxisTick = (v) => {
+  if (v === null || v === undefined) return ''
+  return Number.isInteger(v) ? String(v) : v.toFixed(1)
+}
+
 export default function App() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [theme, setTheme] = useState('dark')
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(max-width: 768px)').matches
+    }
+    return false
+  })
 
-  // Detect mobile screen width
+  // Detect mobile screen width using matchMedia
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const mediaQuery = window.matchMedia('(max-width: 768px)')
+    const handleMediaQueryChange = (e) => setIsMobile(e.matches)
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaQueryChange)
+      return () => mediaQuery.removeEventListener('change', handleMediaQueryChange)
+    } else {
+      mediaQuery.addListener(handleMediaQueryChange)
+      return () => mediaQuery.removeListener(handleMediaQueryChange)
+    }
   }, [])
 
   // Navigation: Story Chapters
@@ -1950,7 +1967,7 @@ export default function App() {
                         stroke="var(--text-muted)"
                         fontSize={10}
                         width={isMobile ? 30 : 40}
-                        tickFormatter={(v) => Math.round(v)}
+                        tickFormatter={formatYAxisTick}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
@@ -2052,7 +2069,7 @@ export default function App() {
                       stroke="var(--text-muted)"
                       fontSize={10}
                       width={isMobile ? 30 : 40}
-                      tickFormatter={(v) => Math.round(v)}
+                      tickFormatter={formatYAxisTick}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
@@ -2257,7 +2274,7 @@ export default function App() {
                         stroke="var(--text-muted)"
                         fontSize={10}
                         width={isMobile ? 30 : 40}
-                        tickFormatter={(v) => Math.round(v)}
+                        tickFormatter={formatYAxisTick}
                       />
                       <YAxis
                         yAxisId="distress"
@@ -2265,7 +2282,7 @@ export default function App() {
                         stroke="var(--text-muted)"
                         fontSize={10}
                         width={isMobile ? 25 : 35}
-                        tickFormatter={(v) => Math.round(v)}
+                        tickFormatter={formatYAxisTick}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
@@ -2352,7 +2369,7 @@ export default function App() {
                         stroke="var(--text-muted)"
                         fontSize={10}
                         width={isMobile ? 35 : 50}
-                        tickFormatter={(v) => Math.round(v)}
+                        tickFormatter={formatYAxisTick}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
@@ -2536,7 +2553,7 @@ export default function App() {
                       fontSize={10}
                       domain={[40, 160]}
                       width={isMobile ? 30 : 40}
-                      tickFormatter={(v) => Math.round(v)}
+                      tickFormatter={formatYAxisTick}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
@@ -2643,7 +2660,7 @@ export default function App() {
                       stroke="var(--text-muted)"
                       fontSize={10}
                       width={isMobile ? 30 : 40}
-                      tickFormatter={(v) => Math.round(v)}
+                      tickFormatter={formatYAxisTick}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
@@ -2728,7 +2745,7 @@ export default function App() {
                       stroke="var(--text-muted)"
                       fontSize={10}
                       width={isMobile ? 30 : 40}
-                      tickFormatter={(v) => Math.round(v)}
+                      tickFormatter={formatYAxisTick}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
