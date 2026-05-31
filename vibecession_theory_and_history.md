@@ -89,7 +89,13 @@ Because the Loss Aversion Index (**78.2**) is far below 100, the psychological r
 During 2020–2021, U.S. households were financially protected by a massive cushion of cash. The **Personal Savings Rate** hit an all-time peak of **33.8%** in April 2020 and averaged 15% through 2021, fueled by stimulus checks, child tax credits, and student loan pauses.
 
 ### The Savings Drain
-When high inflation struck in 2021–2022, households did not immediately cut spending. Instead, they depleted their savings buffers to maintain their standard of living. By 2023, the excess savings cushion was gone, and the personal savings rate collapsed to **under 4%**, where it has remained through 2026.
+When high inflation struck in 2021–2022, households did not immediately cut spending. Instead, they depleted their liquid savings buffers to maintain their standard of living. This massive drawdown accounts for the $5.3 trillion drop in aggregate personal savings across just six years:
+
+* **Stimulus Peak:** Aggregate personal savings skyrocketed to an all-time high of **$5.95 Trillion** in April 2020. Even when Biden took office in Jan 2021, savings stood at **$3.7 Trillion**, peaking again at **$5.7 Trillion** in March 2021 following the final stimulus round.
+* **The Great Depletion:** As inflation spiked, savings evaporated, bottoming out at just **$418 Billion** in June 2022—the exact month consumer sentiment crashed to its historic low of 50.0.
+* **Resumed Slide (2025–2026):** After briefly recovering to $1.26 Trillion in early 2025, savings have fallen steadily to **$611 Billion** by April 2026.
+
+In total, Americans drew down over **$5.3 Trillion** in liquid buffers to fund their consumption, collapsing the personal savings rate from a 15%+ average down to **under 4%** through 2026.
 
 ### The Debt Trap and Interest Rate Shock
 With savings depleted and prices remaining high, consumers turned to debt:

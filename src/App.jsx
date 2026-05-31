@@ -545,7 +545,7 @@ export default function App() {
                       <div>
                         <div className="feature-title">Savings Depletion & Debt Squeeze</div>
                         <div className="feature-desc">
-                          Consumers depleted their <GlossaryTooltip term="savings buffers" definition="Personal Savings Rate collapsed from 15% in 2020 to under 4% by 2023." /> (savings rate fell to under 4%) and accumulated high-interest credit card debt.
+                          Consumers drew down a massive **$5.3 Trillion** in aggregate liquid savings (falling from a peak of $5.95T in 2020 to $418B in June 2022) to cover daily cost-of-living spikes, prompting them to turn to high-interest credit card debt.
                         </div>
                       </div>
                     </div>
@@ -633,7 +633,7 @@ export default function App() {
                   </div>
 
                   <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-                    Note on the chart how actual inflation-adjusted retail sales expanded by **~15%** since 2020 while Michigan Consumer Sentiment index plummeted to half its peak value.
+                    Note on the chart how actual inflation-adjusted retail sales expanded by **~15%** since 2020 while Michigan Consumer Sentiment index plummeted to half its peak value. This spending was fueled by liquidating a massive **$5.3 Trillion** in aggregate personal savings, showing that consumers depleted their liquid buffers to sustain their standard of living.
                   </p>
                 </div>
               </>
@@ -707,7 +707,7 @@ export default function App() {
                           <span>The Cash-Flow Core (Reality)</span>
                         </div>
                         <div className="feature-desc" style={{ marginTop: '0.4rem' }}>
-                          Households are squeezed by a permanent 28% necessity price floor, a depleted savings buffer (under 4%), and record borrowing costs (21%+ credit card APRs and doubled mortgage payments).
+                          Households are squeezed by a permanent 28% necessity price floor, a depleted savings buffer (representing a **$5.3 Trillion** liquid asset drawdown), and record borrowing costs (21%+ credit card APRs and doubled mortgage payments).
                         </div>
                       </div>
                     </div>
