@@ -78,6 +78,15 @@ const formatYAxisTick = (v) => {
   return Number.isInteger(v) ? String(v) : v.toFixed(1)
 }
 
+// X-Axis Date formatter that returns only the year for January on mobile to prevent duplicate year labels, and full date on desktop
+const formatXAxisDate = (d, isMobileVal) => {
+  if (!d) return ''
+  if (isMobileVal) {
+    return d.includes('-01-') ? d.split('-')[0] : ''
+  }
+  return d
+}
+
 export default function App() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1566,6 +1575,10 @@ export default function App() {
                                             ((regressionResults.durbinWatson ?? 2) / 4) * 100
                                           )
                                         )}%`,
+                                        display:
+                                          regressionResults.durbinWatson === null
+                                            ? 'none'
+                                            : 'block',
                                       }}
                                     />
                                   </div>
@@ -1966,7 +1979,7 @@ export default function App() {
                         dataKey="Date"
                         stroke="var(--text-muted)"
                         fontSize={10}
-                        tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                        tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                       />
                       <YAxis
                         domain={[40, 110]}
@@ -2069,7 +2082,7 @@ export default function App() {
                       dataKey="Date"
                       stroke="var(--text-muted)"
                       fontSize={10}
-                      tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                      tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                     />
                     <YAxis
                       stroke="var(--text-muted)"
@@ -2273,7 +2286,7 @@ export default function App() {
                         dataKey="Date"
                         stroke="var(--text-muted)"
                         fontSize={10}
-                        tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                        tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                       />
                       <YAxis
                         yAxisId="percent"
@@ -2287,7 +2300,7 @@ export default function App() {
                         orientation="right"
                         stroke="var(--text-muted)"
                         fontSize={10}
-                        width={isMobile ? 25 : 35}
+                        width={isMobile ? 30 : 35}
                         tickFormatter={formatYAxisTick}
                       />
                       <Tooltip content={<CustomTooltip />} />
@@ -2369,7 +2382,7 @@ export default function App() {
                         dataKey="Date"
                         stroke="var(--text-muted)"
                         fontSize={10}
-                        tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                        tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                       />
                       <YAxis
                         stroke="var(--text-muted)"
@@ -2552,7 +2565,7 @@ export default function App() {
                       dataKey="Date"
                       stroke="var(--text-muted)"
                       fontSize={10}
-                      tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                      tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                     />
                     <YAxis
                       stroke="var(--text-muted)"
@@ -2744,7 +2757,7 @@ export default function App() {
                       dataKey="Date"
                       stroke="var(--text-muted)"
                       fontSize={10}
-                      tickFormatter={(d) => (isMobile ? d.split('-')[0] : d)}
+                      tickFormatter={(d) => formatXAxisDate(d, isMobile)}
                     />
                     <YAxis
                       domain={[40, 110]}
