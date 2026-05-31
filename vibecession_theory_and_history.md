@@ -214,6 +214,7 @@ The "vibe gap" is not just a mental state; it has physical, measurable manifesta
 * **2020:** 60 million people turned to charitable food assistance during the initial lockdown shock.
 * **2022:** 49 million people (1 in 6 Americans) relied on the charitable food sector as inflation took hold.
 * **2023–2026:** The Feeding America network distributed record numbers of meals (over 5.3 billion annually). Food banks reported a "perfect storm" of rising demand alongside a **25%+ increase in their own food acquisition and transportation costs**. 
+* **Methodological Caveat:** Economists (such as Matt Darling) point out that the volume of distributed meals is also a function of capacity. The network's record outreach was heavily funded by large federal grants (including ARPA funds), which significantly expanded food banks' logistics, distribution infrastructure, and community reach. Thus, the statistic reflects a combination of high demand and improved supply-side logistics rather than raw economic destitution alone.
 
 This surge in food bank usage by *employed* individuals is concrete proof of the K-shaped squeeze. Millions of families with secure jobs could no longer afford the basic cost of feeding themselves, demonstrating that full employment did not prevent severe financial vulnerability.
 
