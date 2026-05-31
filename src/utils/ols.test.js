@@ -70,4 +70,15 @@ describe('ols matrix utilities', () => {
     expect(coefficients[0]).toBeCloseTo(1) // Intercept
     expect(coefficients[1]).toBeCloseTo(2) // Slope
   })
+
+  it('should return null when solving OLS with a singular matrix (colinear predictors)', () => {
+    const y = [1, 3, 5]
+    const X = [
+      [1, 2, 4],
+      [1, 3, 6],
+      [1, 4, 8],
+    ] // columns 2 and 3 are linearly dependent (X2 * 2 = X3)
+
+    expect(solveOLS(y, X)).toBeNull()
+  })
 })

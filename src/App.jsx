@@ -94,13 +94,8 @@ export default function App() {
     const mediaQuery = window.matchMedia('(max-width: 768px)')
     const handleMediaQueryChange = (e) => setIsMobile(e.matches)
 
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleMediaQueryChange)
-      return () => mediaQuery.removeEventListener('change', handleMediaQueryChange)
-    } else {
-      mediaQuery.addListener(handleMediaQueryChange)
-      return () => mediaQuery.removeListener(handleMediaQueryChange)
-    }
+    mediaQuery.addEventListener('change', handleMediaQueryChange)
+    return () => mediaQuery.removeEventListener('change', handleMediaQueryChange)
   }, [])
 
   // Navigation: Story Chapters
@@ -1543,16 +1538,20 @@ export default function App() {
                                       fontSize: '1.75rem',
                                       fontWeight: 800,
                                       color:
-                                        regressionResults.durbinWatson < 1.2
-                                          ? 'var(--danger)'
-                                          : regressionResults.durbinWatson < 1.5
-                                            ? 'var(--warning)'
-                                            : 'var(--success)',
+                                        regressionResults.durbinWatson === null
+                                          ? 'var(--text-muted)'
+                                          : regressionResults.durbinWatson < 1.2
+                                            ? 'var(--danger)'
+                                            : regressionResults.durbinWatson < 1.5
+                                              ? 'var(--warning)'
+                                              : 'var(--success)',
                                       fontFamily: 'var(--font-heading)',
                                       margin: '0.1rem 0',
                                     }}
                                   >
-                                    {regressionResults.durbinWatson?.toFixed(3)}
+                                    {regressionResults.durbinWatson !== null
+                                      ? regressionResults.durbinWatson.toFixed(3)
+                                      : 'N/A'}
                                   </div>
                                 </div>
                                 <div>
@@ -1560,7 +1559,13 @@ export default function App() {
                                     <div
                                       className="gauge-pin"
                                       style={{
-                                        left: `${Math.max(0, Math.min(100, (regressionResults.durbinWatson / 4) * 100))}%`,
+                                        left: `${Math.max(
+                                          0,
+                                          Math.min(
+                                            100,
+                                            ((regressionResults.durbinWatson ?? 2) / 4) * 100
+                                          )
+                                        )}%`,
                                       }}
                                     />
                                   </div>
@@ -1577,6 +1582,7 @@ export default function App() {
                                     <span
                                       style={{
                                         color:
+                                          regressionResults.durbinWatson !== null &&
                                           regressionResults.durbinWatson >= 1.5 &&
                                           regressionResults.durbinWatson <= 2.5
                                             ? 'var(--success)'
