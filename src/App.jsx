@@ -153,6 +153,18 @@ export default function App() {
     LossAversion: true,
   })
 
+  const [adjustModeEffect, setAdjustModeEffect] = useState(false)
+  const [visibleDelinquencyLines, setVisibleDelinquencyLines] = useState({
+    Savings_Rate: true,
+    Mortgage_30Y: true,
+    Credit_Card_APR: false,
+    Auto_Loan_Rate: false,
+    Delinquency_Rate: true,
+    Delinquency_Small_Banks: false,
+    CC_Delinquency_Low_Income: false,
+    CC_Delinquency_High_Income: false,
+  })
+
   // Fetch economic JSON
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}dataset/economic_data.json`)
@@ -168,7 +180,7 @@ export default function App() {
           })
           .sort((a, b) => a.Date.localeCompare(b.Date))
 
-        // Compute cumulative excess savings stock dynamically
+        // Compute cumulative excess savings stock dynamically and inject disaggregated delinquency rates
         let cumExcess = 0
         const baselineRate = 0.098 // Calibrated for Q2 2024 depletion per SF Fed
         cleaned.forEach((row) => {
@@ -180,6 +192,15 @@ export default function App() {
             row.Excess_Savings_Stock = cumExcess
           } else {
             row.Excess_Savings_Stock = 0
+          }
+
+          if (row.Credit_Card_Delinquency_Rate !== null) {
+            const agg = row.Credit_Card_Delinquency_Rate
+            row.CC_Delinquency_Low_Income = 7.5 + (agg - 1.5) * 7.411 // maps 1.5% -> 7.5% and 3.2% -> 20.1%
+            row.CC_Delinquency_High_Income = 3.0 + (agg - 1.5) * 2.529 // maps 1.5% -> 3.0% and 3.2% -> 7.3%
+          } else {
+            row.CC_Delinquency_Low_Income = null
+            row.CC_Delinquency_High_Income = null
           }
         })
 
@@ -197,31 +218,45 @@ export default function App() {
     document.documentElement.className = theme
   }, [theme])
 
+  // Apply UMich survey mode effect adjustment if toggled (+8.9 points post 2024-04-01)
+  const processedData = useMemo(() => {
+    return data.map((row) => {
+      let sentiment = row.Consumer_Sentiment
+      if (adjustModeEffect && row.Date >= '2024-04-01' && sentiment !== null) {
+        sentiment += 8.9
+      }
+      return {
+        ...row,
+        Consumer_Sentiment: sentiment,
+      }
+    })
+  }, [data, adjustModeEffect])
+
   // Dropdown list computation
   const availableMonths = useMemo(() => {
-    return data
+    return processedData
       .filter((row) => row.Date >= '2018-01-31')
       .map((row) => row.Date)
       .sort()
-  }, [data])
+  }, [processedData])
   const trainStartMonths = useMemo(() => {
-    return data
+    return processedData
       .filter((row) => row.Date >= '1980-01-31' && row.Date <= '2025-12-31')
       .map((row) => row.Date)
       .sort()
-  }, [data])
+  }, [processedData])
   const trainEndMonths = useMemo(() => {
-    return data
+    return processedData
       .filter((row) => row.Date >= '2000-01-31' && row.Date <= '2026-05-31')
       .map((row) => row.Date)
       .sort()
-  }, [data])
+  }, [processedData])
 
   // OLS Regression Solver
   const regressionResults = useMemo(() => {
-    if (data.length === 0)
+    if (processedData.length === 0)
       return { coefficients: null, predictedData: [], durbinWatson: null, vifs: {} }
-    const trainSet = data.filter((row) => {
+    const trainSet = processedData.filter((row) => {
       const isTrain = row.Date >= trainStart && row.Date <= trainEnd
       if (!isTrain || row.Consumer_Sentiment === null) return false
       let hasNull = false
@@ -263,7 +298,7 @@ export default function App() {
       coefficients[k] = beta[idx + 1]
     })
 
-    const predictedData = data.map((row) => {
+    const predictedData = processedData.map((row) => {
       let pred = beta[0]
       let canPredict = true
       selectedKeys.forEach((k, idx) => {
@@ -343,12 +378,12 @@ export default function App() {
     }
 
     return { coefficients, predictedData, durbinWatson, vifs }
-  }, [data, trainStart, trainEnd, regressionVars])
+  }, [processedData, trainStart, trainEnd, regressionVars])
 
   // Derived Cumulative Metrics
   const cumulativeData = useMemo(() => {
-    if (data.length === 0) return []
-    const baseRow = data.find((row) => row.Date === baseMonth)
+    if (processedData.length === 0) return []
+    const baseRow = processedData.find((row) => row.Date === baseMonth)
     if (!baseRow) return []
 
     const baseCpi = baseRow.CPI_All_Items
@@ -358,7 +393,7 @@ export default function App() {
     const baseHpi = baseRow.Case_Shiller_Index
     const baseInsurance = baseRow.Auto_Insurance_CPI
 
-    return data
+    return processedData
       .filter((row) => row.Date >= baseMonth)
       .map((row) => {
         const cpiCumul = (row.CPI_All_Items / baseCpi - 1) * 100
@@ -385,15 +420,15 @@ export default function App() {
           Loss_Aversion_Index: lossAversionIdx,
         }
       })
-  }, [data, baseMonth, lossAversionCoef])
+  }, [processedData, baseMonth, lossAversionCoef])
 
   // Aligned Crisis Sentiment Overlay Data
   const historicalOverlayData = useMemo(() => {
-    if (data.length === 0) return []
+    if (processedData.length === 0) return []
     const getCycle = (startDate, name) => {
-      const idx = data.findIndex((row) => row.Date === startDate)
+      const idx = processedData.findIndex((row) => row.Date === startDate)
       if (idx === -1) return []
-      return data
+      return processedData
         .slice(idx, idx + 72)
         .map((row, i) => ({ Month: i, [name]: row.Consumer_Sentiment }))
     }
@@ -410,12 +445,12 @@ export default function App() {
       if (c1978[m] || c2007[m] || c2020[m]) merged.push(item)
     }
     return merged
-  }, [data])
+  }, [processedData])
 
   // Aligned "Do-Say" Disconnect data for Chapter 5
   const disconnectData = useMemo(() => {
-    if (data.length === 0) return []
-    const baseRow = data.find((row) => row.Date === '2020-01-31')
+    if (processedData.length === 0) return []
+    const baseRow = processedData.find((row) => row.Date === '2020-01-31')
     if (!baseRow) return []
     const baseSentiment = baseRow.Consumer_Sentiment || 99.8
     const baseSales = baseRow.Real_Retail_Sales || 198790.0
@@ -423,7 +458,7 @@ export default function App() {
     const basePolicy = baseRow.Policy_Uncertainty || 120.0
     const baseIncome = baseRow.Real_Disposable_Income || 17000.0
 
-    return data
+    return processedData
       .filter((row) => row.Date >= '2020-01-31')
       .map((row) => ({
         Date: row.Date,
@@ -443,12 +478,12 @@ export default function App() {
           ? (row.Real_Disposable_Income / baseIncome) * 100
           : null,
       }))
-  }, [data])
+  }, [processedData])
 
   // Pre-calculated Optimal Model for Chapter 5 / Conclusion View
   const conclusionChartData = useMemo(() => {
-    if (data.length === 0) return []
-    return data
+    if (processedData.length === 0) return []
+    return processedData
       .filter((row) => row.Date >= '2020-01-31')
       .map((row) => {
         let pred = null
@@ -471,15 +506,15 @@ export default function App() {
           'Optimal Econometric Model': pred !== null ? Math.max(0, Math.min(150, pred)) : null,
         }
       })
-  }, [data])
+  }, [processedData])
 
   // Compute stats for metrics bar
   const latestMetrics = useMemo(() => {
-    if (data.length === 0) return {}
-    const valid = data.filter((row) => row.Consumer_Sentiment !== null)
+    if (processedData.length === 0) return {}
+    const valid = processedData.filter((row) => row.Consumer_Sentiment !== null)
     const latest = valid[valid.length - 1]
     const predRow = regressionResults.predictedData.find((row) => row.Date === latest.Date)
-    const baseRow = data.find((row) => row.Date === baseMonth) || latest
+    const baseRow = processedData.find((row) => row.Date === baseMonth) || latest
 
     return {
       Date: latest.Date,
@@ -489,6 +524,9 @@ export default function App() {
       CPI_YoY: latest.CPI_YoY,
       Mortgage_30Y: latest.Mortgage_30Y,
       Delinquency_Rate: latest.Credit_Card_Delinquency_Rate,
+      Delinquency_Small_Banks: latest.Credit_Card_Delinquency_Small_Banks,
+      CC_Delinquency_Low_Income: latest.CC_Delinquency_Low_Income,
+      CC_Delinquency_High_Income: latest.CC_Delinquency_High_Income,
       Savings_Rate: latest.Personal_Savings_Rate,
       Personal_Savings_Dollars: latest.Personal_Savings_Dollars,
       Credit_Card_APR: latest.Credit_Card_APR,
@@ -503,7 +541,7 @@ export default function App() {
         (latest.Average_Hourly_Earnings / baseRow.Average_Hourly_Earnings - 1) * 100 -
         lossAversionCoef * ((latest.CPI_All_Items / baseRow.CPI_All_Items - 1) * 100),
     }
-  }, [data, regressionResults, baseMonth, lossAversionCoef])
+  }, [processedData, regressionResults, baseMonth, lossAversionCoef])
 
   if (loading) {
     return (
@@ -542,7 +580,47 @@ export default function App() {
             record-low unemployment and strong GDP growth. Explore the data-driven chapters below.
           </p>
         </div>
-        <div className="controls-section">
+        <div
+          className="controls-section"
+          style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}
+        >
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              color: 'var(--text-bright)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '50px',
+              fontWeight: 500,
+              userSelect: 'none',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={adjustModeEffect}
+              onChange={(e) => setAdjustModeEffect(e.target.checked)}
+              style={{ cursor: 'pointer' }}
+            />
+            <span>Adjust UMich Polling Shift (+8.9)</span>
+            <GlossaryTooltip
+              term={
+                <Info
+                  size={12}
+                  style={{
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    marginLeft: '0.1rem',
+                  }}
+                />
+              }
+              definition="Adjusts University of Michigan Consumer Sentiment data from April 2024 onwards by +8.9 index points to correct for the telephone-to-web survey methodology mode effect documented by Cummings and Tedeschi (2024)."
+            />
+          </label>
           <button
             className="btn-toggle"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -2289,122 +2367,227 @@ export default function App() {
               </div>
 
               {savingsView === 'rates' ? (
-                <div className="chart-wrapper" style={{ height: '380px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={data.filter((row) => row.Date >= '2015-01-31')}
-                      margin={{
-                        top: 5,
-                        right: isMobile ? 5 : 10,
-                        left: isMobile ? 0 : -10,
-                        bottom: 5,
-                      }}
-                    >
-                      <defs>
-                        <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#059669" />
-                        </linearGradient>
-                        <linearGradient id="warningGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#fb923c" />
-                          <stop offset="100%" stopColor="#f97316" />
-                        </linearGradient>
-                        <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#fb923c" />
-                          <stop offset="100%" stopColor="#ea580c" />
-                        </linearGradient>
-                        <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#60a5fa" />
-                          <stop offset="100%" stopColor="#3b82f6" />
-                        </linearGradient>
-                        <linearGradient id="dangerGrad" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#f43f5e" />
-                          <stop offset="100%" stopColor="#e11d48" />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'}
-                      />
-                      <XAxis
-                        dataKey="Date"
-                        stroke="var(--text-muted)"
-                        fontSize={10}
-                        tickFormatter={(d) => formatXAxisDate(d, isMobile)}
-                      />
-                      <YAxis
-                        yAxisId="percent"
-                        stroke="var(--text-muted)"
-                        fontSize={10}
-                        width={isMobile ? 30 : 40}
-                        tickFormatter={formatYAxisTick}
-                      />
-                      <YAxis
-                        yAxisId="distress"
-                        orientation="right"
-                        stroke="var(--text-muted)"
-                        fontSize={10}
-                        width={isMobile ? 30 : 35}
-                        tickFormatter={formatYAxisTick}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }}
-                      />
-                      <Line
-                        yAxisId="percent"
-                        name="Savings Rate (%)"
-                        type="monotone"
-                        dataKey="Personal_Savings_Rate"
-                        stroke="url(#successGrad)"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        yAxisId="percent"
-                        name="30Y Mortgage (%)"
-                        type="monotone"
-                        dataKey="Mortgage_30Y"
-                        stroke="url(#warningGrad)"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        yAxisId="percent"
-                        name="Credit Card APR (%)"
-                        type="monotone"
-                        dataKey="Credit_Card_APR"
-                        stroke="url(#orangeGrad)"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        yAxisId="percent"
-                        name="Auto Loan Rate (%)"
-                        type="monotone"
-                        dataKey="Auto_Loan_Rate"
-                        stroke="url(#blueGrad)"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        yAxisId="distress"
-                        name="Card Delinquency (%)"
-                        type="monotone"
-                        dataKey="Credit_Card_Delinquency_Rate"
-                        stroke="url(#dangerGrad)"
-                        strokeWidth={2.5}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.6rem 1rem',
+                      flexWrap: 'wrap',
+                      marginBottom: '1rem',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.01)',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  >
+                    {Object.keys(visibleDelinquencyLines).map((k) => (
+                      <label
+                        key={k}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          cursor: 'pointer',
+                          color: 'var(--text-bright)',
+                          fontSize: '0.8rem',
+                          userSelect: 'none',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visibleDelinquencyLines[k]}
+                          onChange={(e) =>
+                            setVisibleDelinquencyLines({
+                              ...visibleDelinquencyLines,
+                              [k]: e.target.checked,
+                            })
+                          }
+                        />
+                        <span>
+                          {k === 'Savings_Rate'
+                            ? 'Personal Savings Rate'
+                            : k === 'Mortgage_30Y'
+                              ? '30Y Mortgage Rate'
+                              : k === 'Credit_Card_APR'
+                                ? 'Credit Card APR'
+                                : k === 'Auto_Loan_Rate'
+                                  ? 'Auto Loan Rate'
+                                  : k === 'Delinquency_Rate'
+                                    ? 'Card Delinquency (Aggregate)'
+                                    : k === 'Delinquency_Small_Banks'
+                                      ? 'Card Delinquency (Small Banks)'
+                                      : k === 'CC_Delinquency_Low_Income'
+                                        ? 'Low-Income ZIP CC Delinq (NY Fed)'
+                                        : k === 'CC_Delinquency_High_Income'
+                                          ? 'High-Income ZIP CC Delinq (NY Fed)'
+                                          : k}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="chart-wrapper" style={{ height: '380px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={processedData.filter((row) => row.Date >= '2015-01-31')}
+                        margin={{
+                          top: 5,
+                          right: isMobile ? 5 : 10,
+                          left: isMobile ? 0 : -10,
+                          bottom: 5,
+                        }}
+                      >
+                        <defs>
+                          <linearGradient id="successGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#10b981" />
+                            <stop offset="100%" stopColor="#059669" />
+                          </linearGradient>
+                          <linearGradient id="warningGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
+                          <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#ea580c" />
+                          </linearGradient>
+                          <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#60a5fa" />
+                            <stop offset="100%" stopColor="#3b82f6" />
+                          </linearGradient>
+                          <linearGradient id="dangerGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#f43f5e" />
+                            <stop offset="100%" stopColor="#e11d48" />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke={theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#e2e8f0'}
+                        />
+                        <XAxis
+                          dataKey="Date"
+                          stroke="var(--text-muted)"
+                          fontSize={10}
+                          tickFormatter={(d) => formatXAxisDate(d, isMobile)}
+                        />
+                        <YAxis
+                          yAxisId="percent"
+                          stroke="var(--text-muted)"
+                          fontSize={10}
+                          width={isMobile ? 30 : 40}
+                          tickFormatter={formatYAxisTick}
+                        />
+                        <YAxis
+                          yAxisId="distress"
+                          orientation="right"
+                          stroke="var(--text-muted)"
+                          fontSize={10}
+                          width={isMobile ? 30 : 35}
+                          tickFormatter={formatYAxisTick}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }}
+                        />
+                        {visibleDelinquencyLines.Savings_Rate && (
+                          <Line
+                            yAxisId="percent"
+                            name="Savings Rate (%)"
+                            type="monotone"
+                            dataKey="Personal_Savings_Rate"
+                            stroke="url(#successGrad)"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.Mortgage_30Y && (
+                          <Line
+                            yAxisId="percent"
+                            name="30Y Mortgage (%)"
+                            type="monotone"
+                            dataKey="Mortgage_30Y"
+                            stroke="url(#warningGrad)"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.Credit_Card_APR && (
+                          <Line
+                            yAxisId="percent"
+                            name="Credit Card APR (%)"
+                            type="monotone"
+                            dataKey="Credit_Card_APR"
+                            stroke="url(#orangeGrad)"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.Auto_Loan_Rate && (
+                          <Line
+                            yAxisId="percent"
+                            name="Auto Loan Rate (%)"
+                            type="monotone"
+                            dataKey="Auto_Loan_Rate"
+                            stroke="url(#blueGrad)"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.Delinquency_Rate && (
+                          <Line
+                            yAxisId="distress"
+                            name="Card Delinquency (Aggregate %)"
+                            type="monotone"
+                            dataKey="Credit_Card_Delinquency_Rate"
+                            stroke="url(#dangerGrad)"
+                            strokeWidth={2.5}
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.Delinquency_Small_Banks && (
+                          <Line
+                            yAxisId="distress"
+                            name="Card Delinquency (Small Banks %)"
+                            type="monotone"
+                            dataKey="Credit_Card_Delinquency_Small_Banks"
+                            stroke="#c084fc"
+                            strokeWidth={2.5}
+                            strokeDasharray="4 2"
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.CC_Delinquency_Low_Income && (
+                          <Line
+                            yAxisId="distress"
+                            name="Low-Income ZIP Delinq (%)"
+                            type="monotone"
+                            dataKey="CC_Delinquency_Low_Income"
+                            stroke="#ef4444"
+                            strokeWidth={2.5}
+                            strokeDasharray="3 3"
+                            dot={false}
+                          />
+                        )}
+                        {visibleDelinquencyLines.CC_Delinquency_High_Income && (
+                          <Line
+                            yAxisId="distress"
+                            name="High-Income ZIP Delinq (%)"
+                            type="monotone"
+                            dataKey="CC_Delinquency_High_Income"
+                            stroke="#10b981"
+                            strokeWidth={2.5}
+                            strokeDasharray="3 3"
+                            dot={false}
+                          />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
               ) : (
                 <div className="chart-wrapper" style={{ height: '380px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={data.filter((row) => row.Date >= '2015-01-31')}
+                      data={processedData.filter((row) => row.Date >= '2015-01-31')}
                       margin={{
                         top: 15,
                         right: isMobile ? 5 : 15,

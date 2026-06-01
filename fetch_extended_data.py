@@ -20,6 +20,7 @@ EXTENDED_SERIES_MAP = {
     'GASREGCOVW': 'Gas_Prices',
     'REVOLSL': 'Revolving_Consumer_Credit',
     'DRCCLACBS': 'Credit_Card_Delinquency_Rate',
+    'DRCCLOBS': 'Credit_Card_Delinquency_Small_Banks',
     'PSAVERT': 'Personal_Savings_Rate',
     'TDSP': 'Debt_Service_Ratio',
     'LES1252881600Q': 'Real_Median_Weekly_Earnings',
@@ -131,7 +132,14 @@ def load_and_preprocess_extended():
         # Resample to monthly (end of month)
         if series_id in ['MORTGAGE30US', 'GASREGCOVW']:
             df_monthly = df.resample('M').mean()
-        elif series_id in ['GDPC1', 'LES1252881600Q', 'TDSP', 'TERMCBCCINTNS', 'TERMCBAUTO48NS']:
+        elif series_id in [
+            'GDPC1',
+            'LES1252881600Q',
+            'TDSP',
+            'TERMCBCCINTNS',
+            'TERMCBAUTO48NS',
+            'DRCCLOBS',
+        ]:
             # Quarterly series -> forward fill to monthly
             df_monthly = df.resample('M').ffill()
         else:
