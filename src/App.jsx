@@ -164,7 +164,23 @@ export default function App() {
             if (k !== 'Date' && newRow[k] !== null) newRow[k] = parseFloat(newRow[k])
           })
           return newRow
+        }).sort((a, b) => a.Date.localeCompare(b.Date))
+
+        // Compute cumulative excess savings stock dynamically
+        let cumExcess = 0
+        const baselineRate = 0.098 // Calibrated for Q2 2024 depletion per SF Fed
+        cleaned.forEach((row) => {
+          if (row.Date >= '2020-03-31') {
+            const flow = row.Personal_Savings_Dollars || 0
+            const income = row.Real_Disposable_Income || 0
+            const monthlyExcess = (flow - income * baselineRate) / 12
+            cumExcess += monthlyExcess
+            row.Excess_Savings_Stock = cumExcess
+          } else {
+            row.Excess_Savings_Stock = 0
+          }
         })
+
         setData(cleaned)
         setLoading(false)
       })
@@ -2444,6 +2460,15 @@ export default function App() {
                         dataKey="Personal_Savings_Dollars"
                         stroke="url(#savingsGrad)"
                         strokeWidth={3}
+                        dot={false}
+                      />
+                      <Line
+                        name="Accumulated Excess Savings Stock ($B)"
+                        type="monotone"
+                        dataKey="Excess_Savings_Stock"
+                        stroke="var(--warning)"
+                        strokeWidth={2.5}
+                        strokeDasharray="5 5"
                         dot={false}
                       />
                     </LineChart>
