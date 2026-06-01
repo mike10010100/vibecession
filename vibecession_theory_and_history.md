@@ -61,12 +61,12 @@ The core error made by economists during the vibecession was focusing on **infla
 
 When annual inflation dropped from 9.1% in June 2022 to 2.5% in 2025, economists declared the crisis over. But to a consumer, a 2.5% inflation rate did not mean prices were going down; it meant that prices which had already risen by 28% were going to rise another 2.5%.
 
-### Cumulative Price Shock (Jan 2020 – May 2026):
+### Cumulative Price Shock (Jan 2020 – April 2026):
 
-- **Headline CPI:** **+28.28%**
+- **Headline CPI:** **+28.50%**
 - **Rent Index:** **+31.85%**
-- **Food Index:** **+33.50%**
-- **Gasoline Prices:** Peaked at **+93.5%** ($4.76/gal) and remain **+76.0%** ($4.33/gal).
+- **Food Index:** **+33.18%** (unadjusted; seasonally adjusted: **+34.67%**)
+- **Gasoline Prices:** Peaked at **$5.03/gal** (+93.5% above early 2020 baseline of $2.60/gal) and remain elevated near **$4.48/gal** (+72% above baseline).
 
 These are not discretionary purchases. Food, shelter, and fuel are inelastic, high-frequency necessities. Because consumers purchase groceries and gasoline multiple times per week, they experience "sticker shock" repeatedly.
 
@@ -74,33 +74,39 @@ These are not discretionary purchases. Food, shelter, and fuel are inelastic, hi
 
 Under Daniel Kahneman and Amos Tversky's Nobel Prize-winning **Prospect Theory**, humans experience the pain of a financial loss about **twice as intensely** as the pleasure of an equivalent gain.
 
-In the post-pandemic economy, average nominal wages grew by **34.80%**, while overall prices rose by **28.28%**. On paper, real wages grew by **+6.5%**.
+In the post-pandemic economy, average nominal wages for production and nonsupervisory workers grew by **+34.80%** (and by **+31.59%** for all private employees), while overall consumer prices rose by **+28.50%**. Mathematically, this yields a real wage growth rate of **+5.08%** for production workers and **+2.40%** for all private employees.
 
 However, behavioral economics shows that:
 
 1. **Self-Serving Attribution Bias:** Workers attribute wage increases to their own hard work, merit, and career progression. They feel they _earned_ their raise.
 2. **Systemic Theft:** Conversely, workers view price increases as an external penalty imposed by corporate greed or government incompetence.
-3. **The Loss Aversion Calculation:** When we calculate the **Loss Aversion Index** (weighting price increases at 2.0x the pain of wage gains):
+3. **Narrow Framing:** Consumers evaluate price increases and wage increases in isolation (narrow framing) rather than integrating them into a single "real wage." This is because price increases are experienced multiple times per week as separate, painful transactions, whereas wage increases are experienced as a single, biweekly paycheck.
+4. **The Loss Aversion Calculation:** When we calculate the **Loss Aversion Index** (weighting price increases at 2.0x the pain of wage gains):
 
 $$\text{Loss Aversion Index} = 100 + \text{Wage Growth} - 2.0 \times (\text{CPI Inflation})$$
-$$\text{Loss Aversion Index} = 100 + 34.80\% - 2.0 \times (28.28\%) = \mathbf{78.24}$$
 
-Because the Loss Aversion Index (**78.2**) is far below 100, the psychological reality for the consumer is a feeling of being severely squeezed, even though their nominal wage growth technically exceeded inflation.
+For production and nonsupervisory workers:
+$$\text{Loss Aversion Index} = 100 + 34.80\% - 2.0 \times (28.50\%) = \mathbf{77.80}$$
+
+For all private employees:
+$$\text{Loss Aversion Index} = 100 + 31.59\% - 2.0 \times (28.50\%) = \mathbf{74.59}$$
+
+Because the Loss Aversion Index is far below 100 in both cases, the psychological reality for the consumer is a feeling of being severely squeezed, even though nominal wage growth technically exceeded inflation in aggregate.
 
 ---
 
 ## Pillar 2: The Credit-Savings Squeeze
 
-During 2020–2021, U.S. households were financially protected by a massive cushion of cash. The **Personal Savings Rate** hit an all-time peak of **33.8%** in April 2020 and averaged 15% through 2021, fueled by stimulus checks, child tax credits, and student loan pauses.
+During 2020–2021, U.S. households were financially protected by a massive cushion of cash. The **Personal Savings Rate** hit an all-time peak of **33.5%** in April 2020 and averaged **10.9%–11.8%** in 2021, fueled by stimulus checks, child tax credits, and student loan pauses.
 
 ### The Personal Saving Flow Collapse vs. Excess Savings Depletion
 
 To understand this pillar, we must distinguish between two key concepts: the **personal saving flow rate** (which measures the annualized amount of money saved _during_ a month) and the **excess savings stock** (the _accumulated_ pool of savings built up above the pre-pandemic trend).
 
-- **The Saving Flow Collapse:** Personal saving (FRED ID: `PMSAVE`) is reported as an annualized flow rate. When high inflation struck in 2021–2022, the annualized rate of personal saving collapsed by **$5.5 Trillion**—falling from a historic peak rate of **$5.95 Trillion/year** in April 2020 to a bottom of **$418 Billion/year** in June 2022. By May 2026, it remained depressed at **$611 Billion/year**. While the flow of saving remained positive in aggregate (meaning households, on average, were still saving and not in a net deficit), the rate of new asset generation slowed to a crawl.
-- **The Stock Depletion:** To bridge the cost-of-living squeeze, consumers aggressively drew down their accumulated **stock of pandemic excess savings**. The San Francisco Federal Reserve estimated that this stock of excess savings peaked at **$2.1 Trillion** in August 2021. Due to the collapse in the monthly saving rate relative to trend, this entire $2.1 Trillion buffer was **fully depleted** by early 2024.
+- **The Saving Flow Collapse:** Personal saving (FRED ID: `PMSAVE`) is reported as an annualized flow rate. When high inflation struck in 2021–2022, the annualized rate of personal saving collapsed by **$5.6 Trillion**—falling from a historic, stimulus-fueled peak rate of **$6.15 Trillion/year** in April 2020 to a bottom of **$506 Billion/year** in June 2022. By April 2026, it remained depressed at **$611 Billion/year**. While the flow of saving remained positive in aggregate (meaning households, on average, were still saving rather than actively dissaving in the aggregate), the rate of new asset generation slowed to a crawl.
+- **The Stock Depletion:** To bridge the cost-of-living squeeze, consumers aggressively drew down their accumulated **stock of pandemic excess savings**. The San Francisco Federal Reserve estimated that this stock of excess savings peaked at **$2.1 Trillion** in August 2021. Due to the collapse in the monthly saving rate relative to trend, this entire $2.1 Trillion buffer was **fully depleted** by March 2024. While total household liquid assets remained above 2019 levels in nominal terms, the _excess savings cushion_ was gone, and inflation severely eroded the real purchasing power of the remaining nominal assets.
 
-This combination of a $5.5 Trillion drop in the annualized saving rate and the complete depletion of the $2.1 Trillion excess savings stock left households highly exposed when prices stabilized at permanently higher levels.
+This combination of a $5.6 Trillion drop in the annualized saving rate and the complete depletion of the $2.1 Trillion excess savings stock left households highly exposed when prices stabilized at permanently higher levels.
 
 ### The Debt Trap and Interest Rate Shock
 
@@ -108,7 +114,9 @@ With savings depleted and prices remaining high, consumers turned to debt:
 
 1. **Credit Card Debt (Revolving Credit)** surged to historic records.
 2. **Interest Rates Spiked:** To fight inflation, the Fed raised the Fed Funds Rate to over 5%. Credit card APRs skyrocketed to an average of **over 21%**.
-3. **Delinquencies Surged:** Under the weight of high prices and high interest rates, the **Credit Card Delinquency Rate** spiked from 1.5% in 2021 to **over 3.2%** in 2025–2026.
+3. **Delinquencies Surged:** Under the weight of high prices and high interest rates, the aggregate **Credit Card Delinquency Rate** at all commercial banks rose from 1.5% in 2021 to peak at **3.22% in Q2 2024** before stabilizing around **2.9% in late 2025/early 2026**. However, this aggregate figure masks severe localized distress:
+   - **Income Stratification:** NY Fed data reveals that by early 2025, 90-day delinquency rates reached a staggering **20.1% in the lowest-income 10% of ZIP codes** (compared to only 7.3% in the highest-income 10%).
+   - **Small Banks:** At small commercial banks (outside the top 100 largest), credit card delinquencies surged to **6.4%–7.2% in 2025–2026**—nearly double the historical aggregate average of 3.70%.
 
 This credit distress began to choke real spending. **Real Retail and Food Services Sales (RRSFS) growth** flattened to near **0% YoY** in 2024–2025, demonstrating that the consumer was exhausted.
 
@@ -130,13 +138,13 @@ Headline inflation (CPI) measures "Owner's Equivalent Rent" (OER), which is a su
 
 ### The Housing affordability Crisis
 
-1. **Home Prices:** According to the Case-Shiller National Home Price Index, home prices surged by **over 45%** between 2020 and 2026.
-2. **Mortgage Rates:** The 30-year fixed mortgage rate rose from **3.6% in 2020 to a peak of 7.6%** (currently **6.44%**).
+1. **Home Prices:** According to the Case-Shiller National Home Price Index, home prices surged by **over 56.0%** between January 2020 and early 2026.
+2. **Mortgage Rates:** The 30-year fixed mortgage rate rose from **3.6% in 2020 to a peak of 7.6%** (currently **6.53%**).
 
 This created a massive double-shock:
 
-- **The "Lock-Out" Effect:** The monthly principal and interest payment on a median-priced home doubled from **\$1,600 to over \$2,600**, locking out first-time homebuyers and forcing them to remain in the rental market, driving rents higher.
-- **The "Lock-In" Effect:** Homeowners who locked in 3% mortgage rates during the pandemic refused to sell, as moving would require refinancing at 6.5%. This froze the housing supply, reducing labor mobility and worsening the shortage.
+- **The "Lock-Out" Effect:** The monthly principal and interest payment on a median-priced home actually more than doubled, rising from **$1,496 to $3,385** (a 126% increase) due to the compounding effect of the 56% home price spike and the mortgage rate increase. This completely locked out first-time homebuyers, forcing them to remain in the rental market and driving rents higher.
+- **The "Lock-In" Effect:** Homeowners who locked in 3% mortgage rates during the pandemic refused to sell, as moving would require refinancing at 6.5%. This froze the housing supply. While it insulated existing mortgage holders from rate hikes, it created severe **negative externalities**—specifically, trapping households in suboptimal housing matches (high welfare deadweight loss) and reducing labor mobility, which contributed to stagnation and economic frustration.
 
 A generation of young Americans was locked out of the primary wealth-building asset in the country. This systemic blockage created deep economic frustration that traditional metrics (GDP, unemployment) completely ignored.
 
@@ -293,8 +301,28 @@ Gasoline is the most visible price in the American economy. Testing its statisti
 1. **Pre-Pandemic Baseline (1990–2019):** Adding nominal gasoline prices to the traditional Misery Index improves the model's accuracy ($R^2$) from **60.8% to 68.1%** ($t = -8.96$, $p = 0.000$). For every **$1.00 increase in regular unleaded**, overall consumer sentiment fell by **4.02 points**.
 2. **Post-Pandemic Era (2020–Present):** When Decayed CPI is added to the model, gas prices become **statistically insignificant** ($p = 0.670$) because price shocks are so widespread that Decayed CPI absorbs all the explanatory power.
 
+---
+
+## Methodological Debates: Polling Transitions & Partisan Filters
+
+Any comprehensive evaluation of the post-pandemic consumer sentiment gap must address two key methodological challenges raised by macroeconomic literature:
+
+### 1. The Partisan Asymmetric Filter
+
+Research by Cummings and Mahoney (2023) demonstrates that political identity has filtered economic perception with an unequal "cheering vs. booing" asymmetry. Republicans display a partisan bias roughly 2.5 times stronger than Democrats. Under a Democratic administration, the Republican negative bias (-15 points) is far larger than the Democratic positive bias (+6 points), creating a net drag of approximately **9 points** on aggregate consumer sentiment.
+
+- **The Refutation:** While partisan asymmetry explains roughly one-third (30% to 33%) of the overall vibe gap, **two-thirds of the gap remains completely unexplained by political filters**. Furthermore, when inflation peaked in 2022, sentiment crashed symmetrically across all partisan groups (with Democrats dropping 25 points), proving that the core of the vibecession is anchored in common material constraints.
+
+### 2. The 2024 University of Michigan Survey Mode Transition
+
+Between April and July 2024, the University of Michigan Surveys of Consumers transitioned from telephone interviews to web surveys. Economists (Cummings & Tedeschi, 2024) identify a significant "mode effect" structural break, suggesting online respondents yield scores approximately **8.9 index points lower** than telephone respondents would have.
+
+- **The Refutation:** While this transition explains a step-down in the level of the UMich series, the university's parallel testing over seven years shows a **0.97 correlation** in trends between phone and online methods, confirming the validity of monthly turning points. More crucially, the vibecession was fully established two years before the survey mode change occurred. Sentiment crashed in 2022 and remained flat throughout 2023 under telephone polling, and other metrics that did not change methodology (like the Conference Board index) confirmed this persistent gap.
+
+---
+
 ## Summary Conclusion
 
-The "Vibecession" is a rational consumer response. The public is reacting to a **28% cumulative increase in daily necessities** (which decays slowly as they adapt), the **depletion of their savings buffer**, a **doubling of mortgage payments**, and a **surge in high-interest debt**.
+The "Vibecession" is a rational consumer response. The public is reacting to a **28.5% cumulative increase in daily necessities** (which decays slowly as they adapt), the **depletion of their excess savings buffer** (leaving low-income delinquency rates in ZIP codes at 20.1%), a **doubling of mortgage payments**, and a **surge in high-interest debt**.
 
-Economists who labeled this behavior "irrational" were using a model that ignored cumulative price changes, behavioral decay, and the cost of capital. When these variables are restored, the mystery vanishes: the vibes are bad because the structural cash-flow of the American household is severely strained.
+Economists who labeled this behavior "irrational" were using a model that ignored cumulative price changes, behavioral decay, the cost of capital, and localized distribution of economic pain. When these variables are restored, the mystery vanishes: the vibes are bad because the structural cash-flow of the American household is severely strained.

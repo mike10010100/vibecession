@@ -1221,7 +1221,7 @@ export default function App() {
                             Robust (+2.5% to +3.0%)
                           </td>
                           <td style={{ color: 'var(--success)', fontWeight: 600 }}>
-                            Positive (+6.5% cum.)
+                            Positive (+5.1% cum.)
                           </td>
                           <td style={{ color: 'var(--danger)', fontWeight: 600 }}>
                             Decoupled (Vibecession)
