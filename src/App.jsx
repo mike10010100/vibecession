@@ -995,7 +995,10 @@ export default function App() {
                             letterSpacing: '0.05em',
                           }}
                         >
-                          Liquid Savings
+                          <GlossaryTooltip
+                            term="Personal Saving Flow"
+                            definition="Annualized personal saving rate flow (FRED: PMSAVE) last month. Although the rate is positive (adding to savings), the accumulated stock of pandemic excess savings ($2.1T peak) was fully depleted in early 2024."
+                          />
                         </span>
                         <strong
                           style={{
@@ -1007,7 +1010,7 @@ export default function App() {
                           }}
                         >
                           <PiggyBank size={20} />
-                          <span>${latestMetrics.Personal_Savings_Dollars?.toFixed(0)}B</span>
+                          <span>${latestMetrics.Personal_Savings_Dollars?.toFixed(0)}B/yr</span>
                         </strong>
                       </div>
                       <div
@@ -2214,10 +2217,30 @@ export default function App() {
                       ? 'Household Cash Flow Indicators'
                       : 'Personal Saving Rate Flow'}
                   </h3>
-                  <span className="chart-subtitle">
-                    {savingsView === 'rates'
-                      ? 'Delinquencies and rates since 2015'
-                      : 'Monthly personal saving rate flow in billions of dollars (SAAR)'}
+                  <span
+                    className="chart-subtitle"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  >
+                    <span>
+                      {savingsView === 'rates'
+                        ? 'Delinquencies and rates since 2015'
+                        : 'Monthly personal saving rate flow in billions of dollars (SAAR)'}
+                    </span>
+                    {savingsView === 'dollars' && (
+                      <GlossaryTooltip
+                        term={
+                          <Info
+                            size={14}
+                            style={{
+                              color: 'var(--text-muted)',
+                              cursor: 'pointer',
+                              verticalAlign: 'middle',
+                            }}
+                          />
+                        }
+                        definition="The saving flow rate line plots the annualized monthly saving flow (FRED: PMSAVE). The dashed stock line shows cumulative excess savings over time, calculated using a 9.8% counterfactual baseline. The stock peaks at $1.73T in July 2021 and fully depletes (crosses zero) in April 2024, matching the San Francisco Fed's depletion timeline."
+                      />
+                    )}
                   </span>
                 </div>
                 <div
