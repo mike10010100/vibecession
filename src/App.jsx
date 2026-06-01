@@ -2238,7 +2238,7 @@ export default function App() {
                             }}
                           />
                         }
-                        definition="The saving flow rate line plots the annualized monthly saving flow (FRED: PMSAVE). The dashed stock line shows cumulative excess savings over time, calculated using a 9.8% counterfactual baseline. The stock peaks at $1.73T in July 2021 and fully depletes (crosses zero) in April 2024, matching the San Francisco Fed's depletion timeline."
+                        definition="The saving flow rate line plots the annualized monthly saving flow (FRED: PMSAVE). The dashed stock line shows cumulative excess savings over time, calculated using a 9.8% counterfactual baseline. The stock peaks at $1.73T in July 2021 and fully depletes (crosses zero) in April 2024, matching the San Francisco Fed's depletion timeline (Abdelrahman & Oliveira, 2024)."
                       />
                     )}
                   </span>
@@ -2854,6 +2854,11 @@ export default function App() {
         <p>
           Data Pipeline Sources: Federal Reserve Bank of St. Louis (FRED) • Bureau of Labor
           Statistics • S&P Dow Jones Indices • U.S. Census Bureau
+        </p>
+        <p style={{ marginTop: '0.4rem', fontSize: '0.8rem', opacity: 0.7 }}>
+          * Excess Savings Stock calculation is based on the methodology of the Federal Reserve Bank
+          of San Francisco (Abdelrahman & Oliveira, 2024), calibrated using a 9.8% counterfactual
+          baseline saving rate.
         </p>
         <p style={{ marginTop: '0.4rem', fontSize: '0.8rem', opacity: 0.7 }}>
           * Note: The final data points in the series (e.g. May 2026) utilize forward-filled values
