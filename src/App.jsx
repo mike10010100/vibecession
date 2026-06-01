@@ -158,13 +158,15 @@ export default function App() {
     fetch(`${import.meta.env.BASE_URL}dataset/economic_data.json`)
       .then((res) => res.json())
       .then((json) => {
-        const cleaned = json.map((row) => {
-          const newRow = { ...row }
-          Object.keys(newRow).forEach((k) => {
-            if (k !== 'Date' && newRow[k] !== null) newRow[k] = parseFloat(newRow[k])
+        const cleaned = json
+          .map((row) => {
+            const newRow = { ...row }
+            Object.keys(newRow).forEach((k) => {
+              if (k !== 'Date' && newRow[k] !== null) newRow[k] = parseFloat(newRow[k])
+            })
+            return newRow
           })
-          return newRow
-        }).sort((a, b) => a.Date.localeCompare(b.Date))
+          .sort((a, b) => a.Date.localeCompare(b.Date))
 
         // Compute cumulative excess savings stock dynamically
         let cumExcess = 0
@@ -787,8 +789,8 @@ export default function App() {
                           The annualized rate of new personal saving collapsed by **$5.5 Trillion**
                           (falling from a peak rate of $5.95T/year in 2020 to $418B/year in 2022) as
                           consumers fully depleted their **$2.1 Trillion** stock of accumulated
-                          pandemic excess savings to sustain consumption, forcing them onto high-interest
-                          credit cards.
+                          pandemic excess savings to sustain consumption, forcing them onto
+                          high-interest credit cards.
                         </div>
                       </div>
                     </div>
@@ -1158,10 +1160,10 @@ export default function App() {
                   >
                     Note on the chart how actual inflation-adjusted retail sales expanded by
                     **~15%** since 2020 while Michigan Consumer Sentiment index plummeted to half
-                    its peak value. This spending was sustained by drawing down a massive
-                    **$2.1 Trillion** stock of accumulated excess savings, alongside a **$5.5 Trillion**
-                    collapse in the annualized rate of personal saving, showing that consumers depleted
-                    their liquid buffers to sustain their standard of living.
+                    its peak value. This spending was sustained by drawing down a massive **$2.1
+                    Trillion** stock of accumulated excess savings, alongside a **$5.5 Trillion**
+                    collapse in the annualized rate of personal saving, showing that consumers
+                    depleted their liquid buffers to sustain their standard of living.
                   </p>
                 </div>
               </>
@@ -1295,9 +1297,10 @@ export default function App() {
                         </div>
                         <div className="feature-desc" style={{ marginTop: '0.4rem' }}>
                           Households are squeezed by a permanent 28% necessity price floor, a
-                          depleted savings buffer (fully liquidating **$2.1 Trillion** in accumulated
-                          excess savings and collapsing the annualized saving rate by **$5.5 Trillion**),
-                          and record borrowing costs (21%+ credit card APRs and doubled mortgage payments).
+                          depleted savings buffer (fully liquidating **$2.1 Trillion** in
+                          accumulated excess savings and collapsing the annualized saving rate by
+                          **$5.5 Trillion**), and record borrowing costs (21%+ credit card APRs and
+                          doubled mortgage payments).
                         </div>
                       </div>
                     </div>

@@ -94,10 +94,11 @@ Because the Loss Aversion Index (**78.2**) is far below 100, the psychological r
 During 2020–2021, U.S. households were financially protected by a massive cushion of cash. The **Personal Savings Rate** hit an all-time peak of **33.8%** in April 2020 and averaged 15% through 2021, fueled by stimulus checks, child tax credits, and student loan pauses.
 
 ### The Personal Saving Flow Collapse vs. Excess Savings Depletion
-To understand this pillar, we must distinguish between two key concepts: the **personal saving flow rate** (which measures the annualized amount of money saved *during* a month) and the **excess savings stock** (the *accumulated* pool of savings built up above the pre-pandemic trend).
+
+To understand this pillar, we must distinguish between two key concepts: the **personal saving flow rate** (which measures the annualized amount of money saved _during_ a month) and the **excess savings stock** (the _accumulated_ pool of savings built up above the pre-pandemic trend).
 
 - **The Saving Flow Collapse:** Personal saving (FRED ID: `PMSAVE`) is reported as an annualized flow rate. When high inflation struck in 2021–2022, the annualized rate of personal saving collapsed by **$5.5 Trillion**—falling from a historic peak rate of **$5.95 Trillion/year** in April 2020 to a bottom of **$418 Billion/year** in June 2022. By May 2026, it remained depressed at **$611 Billion/year**. While the flow of saving remained positive in aggregate (meaning households, on average, were still saving and not in a net deficit), the rate of new asset generation slowed to a crawl.
-- **The Stock Depletion:** To bridge the cost-of-living squeeze, consumers aggressively drew down their accumulated **stock of pandemic excess savings**. The San Francisco Federal Reserve estimated that this stock of excess savings peaked at **$2.1 Trillion** in August 2021. Due to the collapse in the monthly saving rate relative to trend, this entire $2.1 Trillion buffer was **fully depleted** by early 2024. 
+- **The Stock Depletion:** To bridge the cost-of-living squeeze, consumers aggressively drew down their accumulated **stock of pandemic excess savings**. The San Francisco Federal Reserve estimated that this stock of excess savings peaked at **$2.1 Trillion** in August 2021. Due to the collapse in the monthly saving rate relative to trend, this entire $2.1 Trillion buffer was **fully depleted** by early 2024.
 
 This combination of a $5.5 Trillion drop in the annualized saving rate and the complete depletion of the $2.1 Trillion excess savings stock left households highly exposed when prices stabilized at permanently higher levels.
 
