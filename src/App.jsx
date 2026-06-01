@@ -768,10 +768,11 @@ export default function App() {
                       <div>
                         <div className="feature-title">Savings Depletion & Debt Squeeze</div>
                         <div className="feature-desc">
-                          Consumers drew down a massive **$5.3 Trillion** in aggregate liquid
-                          savings (falling from a peak of $5.95T in 2020 to $418B in June 2022) to
-                          cover daily cost-of-living spikes, prompting them to turn to high-interest
-                          credit card debt.
+                          The annualized rate of new personal saving collapsed by **$5.5 Trillion**
+                          (falling from a peak rate of $5.95T/year in 2020 to $418B/year in 2022) as
+                          consumers fully depleted their **$2.1 Trillion** stock of accumulated
+                          pandemic excess savings to sustain consumption, forcing them onto high-interest
+                          credit cards.
                         </div>
                       </div>
                     </div>
@@ -1141,9 +1142,10 @@ export default function App() {
                   >
                     Note on the chart how actual inflation-adjusted retail sales expanded by
                     **~15%** since 2020 while Michigan Consumer Sentiment index plummeted to half
-                    its peak value. This spending was fueled by liquidating a massive **$5.3
-                    Trillion** in aggregate personal savings, showing that consumers depleted their
-                    liquid buffers to sustain their standard of living.
+                    its peak value. This spending was sustained by drawing down a massive
+                    **$2.1 Trillion** stock of accumulated excess savings, alongside a **$5.5 Trillion**
+                    collapse in the annualized rate of personal saving, showing that consumers depleted
+                    their liquid buffers to sustain their standard of living.
                   </p>
                 </div>
               </>
@@ -1277,9 +1279,9 @@ export default function App() {
                         </div>
                         <div className="feature-desc" style={{ marginTop: '0.4rem' }}>
                           Households are squeezed by a permanent 28% necessity price floor, a
-                          depleted savings buffer (representing a **$5.3 Trillion** liquid asset
-                          drawdown), and record borrowing costs (21%+ credit card APRs and doubled
-                          mortgage payments).
+                          depleted savings buffer (fully liquidating **$2.1 Trillion** in accumulated
+                          excess savings and collapsing the annualized saving rate by **$5.5 Trillion**),
+                          and record borrowing costs (21%+ credit card APRs and doubled mortgage payments).
                         </div>
                       </div>
                     </div>
@@ -2191,12 +2193,12 @@ export default function App() {
                   <h3 style={{ fontSize: '1.15rem', color: 'var(--text-bright)' }}>
                     {savingsView === 'rates'
                       ? 'Household Cash Flow Indicators'
-                      : 'Personal Savings Drawdown'}
+                      : 'Personal Saving Rate Flow'}
                   </h3>
                   <span className="chart-subtitle">
                     {savingsView === 'rates'
                       ? 'Delinquencies and rates since 2015'
-                      : 'Absolute personal savings in billions of dollars (SAAR)'}
+                      : 'Monthly personal saving rate flow in billions of dollars (SAAR)'}
                   </span>
                 </div>
                 <div
@@ -2239,7 +2241,7 @@ export default function App() {
                       fontWeight: 600,
                     }}
                   >
-                    Savings Drawdown ($B)
+                    Saving Flow ($B)
                   </button>
                 </div>
               </div>
@@ -2396,13 +2398,13 @@ export default function App() {
                         wrapperStyle={{ fontSize: '0.85rem', marginTop: '10px' }}
                       />
 
-                      {/* Highlight the Savings Drawdown period */}
+                      {/* Highlight the Saving Flow Collapse period */}
                       <ReferenceArea
                         x1="2020-04-30"
                         x2="2022-06-30"
                         fill="rgba(244, 63, 94, 0.05)"
                         label={{
-                          value: 'Savings Drawdown: -$5.5T',
+                          value: 'Saving Rate Collapse: -$5.5T/yr',
                           position: 'top',
                           fill: 'var(--danger)',
                           fontSize: 10,
@@ -2416,7 +2418,7 @@ export default function App() {
                         stroke="var(--success)"
                         strokeDasharray="3 3"
                         label={{
-                          value: 'Peak: $5.95T',
+                          value: 'Peak Flow: $5.95T/yr',
                           position: 'top',
                           fill: 'var(--success)',
                           fontSize: 9,
@@ -2429,7 +2431,7 @@ export default function App() {
                         stroke="var(--danger)"
                         strokeDasharray="3 3"
                         label={{
-                          value: 'Bottom: $418B',
+                          value: 'Bottom Flow: $418B/yr',
                           position: 'bottom',
                           fill: 'var(--danger)',
                           fontSize: 9,
@@ -2437,7 +2439,7 @@ export default function App() {
                       />
 
                       <Line
-                        name="Personal Savings ($ Billions)"
+                        name="Personal Saving Rate Flow ($B SAAR)"
                         type="monotone"
                         dataKey="Personal_Savings_Dollars"
                         stroke="url(#savingsGrad)"
