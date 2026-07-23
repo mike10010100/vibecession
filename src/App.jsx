@@ -46,6 +46,10 @@ const VAR_DEFINITIONS = {
   CPI_YoY: 'Consumer Price Index Year-over-Year change. Measures the annual rate of inflation.',
   Decayed_CPI_Shock_2020:
     'A behavioral inflation index where price shock pain decays 50% per year as consumers adapt.',
+  Synthetic_Pre1983_CPI_YoY:
+    'Synthetic Pre-1983 CPI Inflation Index (Bolhuis, Cramer, Harmenberg, & Summers 2024 / NBER WP 32163) embedding mortgage interest rates and home purchase prices directly into cost-of-living.',
+  Decayed_Synthetic_CPI_Shock_2020:
+    'Combined Summers et al. borrowing-cost inflation index with Cummings & Mahoney 50% annual exponential decay.',
   Cumulative_CPI_Increase_2020:
     'Total cumulative consumer price level increase since January 2020.',
   Personal_Savings_Rate:
@@ -128,6 +132,8 @@ export default function App() {
     Unemployment_Rate: true,
     CPI_YoY: true,
     Decayed_CPI_Shock_2020: false,
+    Synthetic_Pre1983_CPI_YoY: false,
+    Decayed_Synthetic_CPI_Shock_2020: false,
     Cumulative_CPI_Increase_2020: false,
     Personal_Savings_Rate: false,
     Mortgage_30Y: false,
