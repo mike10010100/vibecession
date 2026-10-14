@@ -138,7 +138,7 @@ Headline inflation (CPI) measures "Owner's Equivalent Rent" (OER), which is a su
 
 ### The "Cost of Money" Thesis (Summers et al., 2024 / NBER WP 32163)
 
-In early 2024, former Treasury Secretary **Lawrence H. Summers**, along with co-authors **Marijn A. Bolhuis**, **Judd N. L. Cramer**, and **Karl Oskar Schulz**, published a landmark NBER working paper (*"The Cost of Money is Part of the Cost of Living: New Evidence on the Consumer Sentiment Anomaly"*). 
+In early 2024, former Treasury Secretary **Lawrence H. Summers**, along with co-authors **Marijn A. Bolhuis**, **Judd N. L. Cramer**, and **Karl Oskar Schulz**, published a landmark NBER working paper (_"The Cost of Money is Part of the Cost of Living: New Evidence on the Consumer Sentiment Anomaly"_).
 
 The authors demonstrated that the apparent "mystery" of depressed consumer sentiment is largely an artifact of a 1983 methodological change by the Bureau of Labor Statistics (BLS):
 
@@ -295,7 +295,7 @@ $$\text{Sentiment}_t = 98.05 - 2.15 \times (\text{Unemployment}_t) - 4.21 \times
 
 ### 4. The Decayed Synthetic Model (Summers + Cummings/Mahoney Unified Synthesis)
 
-By uniting **Summers et al. (NBER WP 32163)** borrowing-cost inflation with **Cummings & Mahoney (2023)** exponential decay, we construct the **Decayed Synthetic CPI Shock** (`Decayed_Synthetic_CPI_Shock_2020`). 
+By uniting **Summers et al. (NBER WP 32163)** borrowing-cost inflation with **Cummings & Mahoney (2023)** exponential decay, we construct the **Decayed Synthetic CPI Shock** (`Decayed_Synthetic_CPI_Shock_2020`).
 
 This model embeds the 18% peak borrowing-adjusted inflation while accounting for the 50%/year behavioral decay as consumers acclimate:
 

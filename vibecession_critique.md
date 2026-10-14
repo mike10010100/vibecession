@@ -103,7 +103,7 @@ Furthermore, if we estimate an alternative level model that controls for the **P
 
 ### Solution: Synthetic Borrowing-Cost Price Index (Summers et al., 2024)
 
-The econometrically clean solution to this multicollinearity paradox is provided by **Bolhuis, Cramer, Harmenberg, & Summers (NBER WP 32163)**. 
+The econometrically clean solution to this multicollinearity paradox is provided by **Bolhuis, Cramer, Harmenberg, & Summers (NBER WP 32163)**.
 
 Instead of adding raw interest rate series as separate, collinear regressors alongside CPI, Summers et al. embed mortgage interest rates, auto financing costs, and home purchase prices directly into the price index (reconstructing the pre-1983 BLS CPI methodology).
 
